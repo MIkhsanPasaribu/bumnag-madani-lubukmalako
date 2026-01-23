@@ -15,8 +15,8 @@
     --color-bumnag-red: #8B1A1A;
     --color-bumnag-red-light: #A83232;
     --color-bumnag-red-dark: #5C1111;
-    --color-bumnag-cream: #F5F3E8;
-    --color-bumnag-gray: #4A4A4A;
+    --color-bumnag-cream: #FAFAF5;
+    --color-bumnag-gray: #374151;
 }
 
 @layer base {
@@ -26,47 +26,149 @@
     
     body {
         @apply bg-bumnag-cream text-bumnag-gray antialiased;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    
+    * {
+        @apply border-gray-200;
     }
 }
 
 @layer components {
     .bento-card {
-        @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300;
+        @apply bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300;
     }
     
     .bento-card-accent {
-        @apply bg-gradient-to-br from-bumnag-olive to-bumnag-olive-dark text-white rounded-2xl p-6 shadow-lg;
+        @apply bg-gradient-to-br from-bumnag-olive via-bumnag-olive to-bumnag-olive-dark text-white rounded-2xl p-5 md:p-8 shadow-xl relative overflow-hidden;
+    }
+    
+    .bento-card-accent::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
     }
     
     .bento-card-red {
-        @apply bg-gradient-to-br from-bumnag-red to-bumnag-red-dark text-white rounded-2xl p-6 shadow-lg;
+        @apply bg-gradient-to-br from-bumnag-red to-bumnag-red-dark text-white rounded-2xl p-5 md:p-6 shadow-xl;
     }
     
     .btn-primary {
-        @apply inline-flex items-center justify-center px-6 py-3 bg-bumnag-olive text-white font-semibold rounded-xl hover:bg-bumnag-olive-dark transition-colors duration-200;
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-bumnag-olive text-white text-sm font-semibold rounded-xl hover:bg-bumnag-olive-dark active:scale-[0.98] transition-all duration-200 shadow-sm;
     }
     
     .btn-secondary {
-        @apply inline-flex items-center justify-center px-6 py-3 bg-bumnag-red text-white font-semibold rounded-xl hover:bg-bumnag-red-dark transition-colors duration-200;
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-bumnag-red text-white text-sm font-semibold rounded-xl hover:bg-bumnag-red-dark active:scale-[0.98] transition-all duration-200 shadow-sm;
     }
     
     .btn-outline {
-        @apply inline-flex items-center justify-center px-6 py-3 border-2 border-bumnag-olive text-bumnag-olive font-semibold rounded-xl hover:bg-bumnag-olive hover:text-white transition-colors duration-200;
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-bumnag-olive text-bumnag-olive text-sm font-semibold rounded-xl hover:bg-bumnag-olive hover:text-white active:scale-[0.98] transition-all duration-200;
+    }
+    
+    .btn-white {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-bumnag-olive text-sm font-semibold rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 shadow-sm;
     }
     
     .nav-link {
-        @apply flex items-center gap-3 px-4 py-3 text-bumnag-gray hover:bg-bumnag-olive/10 hover:text-bumnag-olive rounded-xl transition-all duration-200;
+        @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-bumnag-olive/10 hover:text-bumnag-olive rounded-xl transition-all duration-200 font-medium text-sm;
     }
     
     .nav-link.active {
-        @apply bg-bumnag-olive text-white;
+        @apply bg-bumnag-olive text-white shadow-md;
+    }
+    
+    .nav-link.active:hover {
+        @apply bg-bumnag-olive-dark text-white;
     }
     
     .section-title {
-        @apply text-2xl md:text-3xl font-bold text-bumnag-gray mb-2;
+        @apply text-xl md:text-2xl font-bold text-bumnag-gray;
     }
     
     .section-subtitle {
-        @apply text-gray-500 mb-8;
+        @apply text-gray-500 text-sm md:text-base;
+    }
+    
+    .stat-card {
+        @apply bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300;
+    }
+    
+    .stat-icon {
+        @apply w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0;
+    }
+    
+    .stat-value {
+        @apply text-lg md:text-xl font-bold text-bumnag-gray truncate;
+    }
+    
+    .stat-label {
+        @apply text-xs md:text-sm text-gray-500;
+    }
+    
+    .news-card {
+        @apply bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300;
+    }
+    
+    .news-card-image {
+        @apply w-full h-36 md:h-44 object-cover;
+    }
+    
+    .news-card-content {
+        @apply p-4 md:p-5;
+    }
+    
+    .priority-badge {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+    }
+    
+    .priority-tinggi {
+        @apply bg-red-100 text-red-700;
+    }
+    
+    .priority-sedang {
+        @apply bg-yellow-100 text-yellow-700;
+    }
+    
+    .priority-rendah {
+        @apply bg-green-100 text-green-700;
+    }
+}
+
+@layer utilities {
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db transparent;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 3px;
     }
 }
