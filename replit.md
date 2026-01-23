@@ -1,38 +1,84 @@
-# BUMNAG Madani Lubukmalako
+# BUMNag Madani Lubuk Malako
+
+Website resmi Badan Usaha Milik Nagari Madani Lubuk Malako.
 
 ## Overview
-A Laravel 11 web application running on PHP 8.4. This is a fresh Laravel installation with SQLite database for local development.
+Website ini dibangun menggunakan Laravel 11 dengan PHP 8.4. Menampilkan profil organisasi, laporan keuangan, berita, dan pengumuman dengan desain modern Bento-style.
 
-## Project Structure
-- `app/` - Application code (Models, Controllers, etc.)
-- `bootstrap/` - Framework bootstrap files
-- `config/` - Configuration files
-- `database/` - Database migrations, seeders, and SQLite database
-- `public/` - Publicly accessible files
-- `resources/` - Views, CSS, JavaScript source files
-- `routes/` - Application routes (web.php, api.php)
-- `storage/` - Logs, cache, compiled files
-- `tests/` - Test files
-- `vendor/` - Composer dependencies
+## Fitur Utama
+- **Beranda**: Dashboard dengan statistik keuangan, berita terbaru, dan pengumuman
+- **Profil BUMNag**: Sejarah, visi, misi, struktur organisasi, dan kontak
+- **Statistik Laporan Keuangan**: Grafik pendapatan, pengeluaran, dan laba/rugi
+- **Transparansi Keuangan**: Daftar laporan keuangan yang dapat diakses publik
+- **Berita**: Artikel berita dan informasi kegiatan BUMNag
+- **Pengumuman**: Pengumuman penting dari BUMNag
 
-## Development Setup
-- **PHP Version**: 8.4
-- **Framework**: Laravel 11
-- **Database**: SQLite (database/database.sqlite)
-- **Server**: PHP built-in server on port 5000
-
-## Running the Application
-The application runs automatically via the configured workflow:
+## Struktur Proyek
 ```
+app/
+├── Http/Controllers/    # Controllers (Beranda, Profil, Keuangan, Berita, Pengumuman)
+├── Models/              # Models (ProfilBumnag, LaporanKeuangan, Berita, Pengumuman)
+config/                  # Konfigurasi Laravel
+database/
+├── migrations/          # Database migrations
+├── seeders/             # Data sample
+├── bumnag_madani.sql    # SQL export untuk MySQL/cPanel
+public/
+├── images/logo.png      # Logo BUMNag
+├── build/               # Compiled CSS/JS
+resources/
+├── css/app.css          # Tailwind CSS dengan custom theme BUMNag
+├── views/               # Blade templates
+routes/web.php           # Route definitions
+```
+
+## Color Palette (dari Logo)
+- **Olive/Hijau Kekuningan**: #A5A71C (primary)
+- **Merah Tua**: #8B1A1A (secondary)
+- **Cream**: #F5F3E8 (background)
+- **Abu-abu**: #4A4A4A (text)
+
+## Development
+```bash
+# Install dependencies
+composer install
+npm install
+
+# Build assets
+npm run build
+
+# Run server
 php artisan serve --host=0.0.0.0 --port=5000
+
+# Run migrations
+php artisan migrate
+
+# Seed sample data
+php artisan db:seed
 ```
 
-## Key Commands
-- `php artisan migrate` - Run database migrations
-- `php artisan make:controller ControllerName` - Create a new controller
-- `php artisan make:model ModelName -m` - Create a model with migration
-- `composer install` - Install PHP dependencies
+## Deployment ke cPanel
+1. Upload semua file ke hosting cPanel
+2. Import `database/bumnag_madani.sql` ke MySQL via phpMyAdmin
+3. Update `.env` dengan kredensial database MySQL:
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=localhost
+   DB_DATABASE=nama_database
+   DB_USERNAME=username_db
+   DB_PASSWORD=password_db
+   ```
+4. Jalankan `php artisan migrate` (jika menggunakan migrations)
+5. Atau jalankan `php artisan db:seed` untuk data sample
+6. Set document root ke folder `public/`
 
-## Configuration Notes
-- Trusted proxies are configured to trust all proxies (required for Replit's proxy environment)
-- Application binds to 0.0.0.0 to be accessible through Replit's webview
+## Database
+- Development: SQLite (database/database.sqlite)
+- Production: MySQL (gunakan file bumnag_madani.sql)
+
+## Recent Changes
+- 2026-01-23: Initial development
+  - Setup Laravel 11 dengan Tailwind CSS
+  - Implementasi semua fitur: Profil, Keuangan, Berita, Pengumuman
+  - Desain Bento-style dengan color palette dari logo
+  - Export SQL untuk deployment cPanel

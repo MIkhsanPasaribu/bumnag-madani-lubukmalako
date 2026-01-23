@@ -6,6 +6,67 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    --color-bumnag-olive: #A5A71C;
+    --color-bumnag-olive-light: #C5C740;
+    --color-bumnag-olive-dark: #7A7C15;
+    --color-bumnag-red: #8B1A1A;
+    --color-bumnag-red-light: #A83232;
+    --color-bumnag-red-dark: #5C1111;
+    --color-bumnag-cream: #F5F3E8;
+    --color-bumnag-gray: #4A4A4A;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        @apply bg-bumnag-cream text-bumnag-gray antialiased;
+    }
+}
+
+@layer components {
+    .bento-card {
+        @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300;
+    }
+    
+    .bento-card-accent {
+        @apply bg-gradient-to-br from-bumnag-olive to-bumnag-olive-dark text-white rounded-2xl p-6 shadow-lg;
+    }
+    
+    .bento-card-red {
+        @apply bg-gradient-to-br from-bumnag-red to-bumnag-red-dark text-white rounded-2xl p-6 shadow-lg;
+    }
+    
+    .btn-primary {
+        @apply inline-flex items-center justify-center px-6 py-3 bg-bumnag-olive text-white font-semibold rounded-xl hover:bg-bumnag-olive-dark transition-colors duration-200;
+    }
+    
+    .btn-secondary {
+        @apply inline-flex items-center justify-center px-6 py-3 bg-bumnag-red text-white font-semibold rounded-xl hover:bg-bumnag-red-dark transition-colors duration-200;
+    }
+    
+    .btn-outline {
+        @apply inline-flex items-center justify-center px-6 py-3 border-2 border-bumnag-olive text-bumnag-olive font-semibold rounded-xl hover:bg-bumnag-olive hover:text-white transition-colors duration-200;
+    }
+    
+    .nav-link {
+        @apply flex items-center gap-3 px-4 py-3 text-bumnag-gray hover:bg-bumnag-olive/10 hover:text-bumnag-olive rounded-xl transition-all duration-200;
+    }
+    
+    .nav-link.active {
+        @apply bg-bumnag-olive text-white;
+    }
+    
+    .section-title {
+        @apply text-2xl md:text-3xl font-bold text-bumnag-gray mb-2;
+    }
+    
+    .section-subtitle {
+        @apply text-gray-500 mb-8;
+    }
 }
