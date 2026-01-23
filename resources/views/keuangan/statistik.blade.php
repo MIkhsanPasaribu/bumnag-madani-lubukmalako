@@ -1,7 +1,16 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title', 'Statistik Laporan Keuangan - BUMNag Madani Lubuk Malako')
-@section('page-title', 'Statistik Keuangan')
+
+@section('breadcrumb')
+<nav class="breadcrumb">
+    <a href="{{ route('beranda') }}">Beranda</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="#">Keuangan</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="current">Statistik Laporan</span>
+</nav>
+@endsection
 
 @section('content')
 <div class="space-y-6 lg:space-y-8">

@@ -1,7 +1,16 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title', $berita->judul . ' - BUMNag Madani Lubuk Malako')
-@section('page-title', 'Detail Berita')
+
+@section('breadcrumb')
+<nav class="breadcrumb">
+    <a href="{{ route('beranda') }}">Beranda</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{{ route('berita.index') }}">Berita</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="current">{{ Str::limit($berita->judul, 30) }}</span>
+</nav>
+@endsection
 
 @section('content')
 <div class="space-y-6 lg:space-y-8">

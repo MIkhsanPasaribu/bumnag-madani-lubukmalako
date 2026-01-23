@@ -1,7 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title', 'Berita - BUMNag Madani Lubuk Malako')
-@section('page-title', 'Berita')
+
+@section('breadcrumb')
+<nav class="breadcrumb">
+    <a href="{{ route('beranda') }}">Beranda</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="current">Berita</span>
+</nav>
+@endsection
 
 @section('content')
 <div class="space-y-6 lg:space-y-8">

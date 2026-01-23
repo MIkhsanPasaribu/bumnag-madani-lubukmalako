@@ -1,7 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title', 'Beranda - BUMNag Madani Lubuk Malako')
-@section('page-title', 'Beranda')
+
+@section('breadcrumb')
+<nav class="breadcrumb">
+    <span class="current">Beranda</span>
+</nav>
+@endsection
 
 @section('content')
 <div class="space-y-6 lg:space-y-8">
