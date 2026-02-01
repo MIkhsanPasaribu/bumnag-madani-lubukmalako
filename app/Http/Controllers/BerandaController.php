@@ -3,32 +3,64 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
-use App\Models\LaporanKeuangan;
 use App\Models\Pengumuman;
 use App\Models\ProfilBumnag;
+use App\Models\TransaksiKas;
+use Illuminate\Http\Request;
 
+/**
+ * Controller untuk halaman beranda publik
+ */
 class BerandaController extends Controller
 {
+    /**
+     * Menampilkan halaman beranda dengan statistik dan konten terbaru
+     */
     public function index()
     {
-        $profil = ProfilBumnag::first();
-        $beritaTerbaru = Berita::published()->latest('published_at')->take(3)->get();
-        $pengumumanAktif = Pengumuman::active()->latest()->take(5)->get();
-        $laporanTerbaru = LaporanKeuangan::published()->latest()->first();
+        // Profil BUMNag
+        $profil = ProfilBumnag::getProfil();
         
-        $statistikKeuangan = LaporanKeuangan::published()
-            ->selectRaw('tahun, SUM(pendapatan) as total_pendapatan, SUM(pengeluaran) as total_pengeluaran')
-            ->groupBy('tahun')
-            ->orderBy('tahun', 'desc')
-            ->take(5)
+        // Berita terbaru (3 berita)
+        $beritaTerbaru = Berita::published()
+            ->latest()
+            ->take(3)
             ->get();
-
-        return view('beranda', compact(
+        
+        // Pengumuman aktif (4 pengumuman)
+        $pengumumanAktif = Pengumuman::aktif()
+            ->byPrioritas()
+            ->take(4)
+            ->get();
+        
+        // Statistik keuangan tahun ini dari TransaksiKas
+        $tahunIni = date('Y');
+        $dataTransaksi = TransaksiKas::tahun($tahunIni)->get();
+        $statistikKeuangan = [
+            'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
+            'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
+            'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
+            'jumlah_transaksi' => $dataTransaksi->count(),
+        ];
+        
+        // Transaksi terbaru
+        $transaksiTerbaru = TransaksiKas::terbaru()->first();
+        
+        // Jumlah total
+        $totalBerita = Berita::published()->count();
+        $totalPengumuman = Pengumuman::aktif()->count();
+        $totalLaporan = TransaksiKas::count();
+        
+        return view('public.beranda', compact(
             'profil',
             'beritaTerbaru',
             'pengumumanAktif',
-            'laporanTerbaru',
-            'statistikKeuangan'
+            'statistikKeuangan',
+            'transaksiTerbaru',
+            'totalBerita',
+            'totalPengumuman',
+            'totalLaporan',
+            'tahunIni'
         ));
     }
 }
