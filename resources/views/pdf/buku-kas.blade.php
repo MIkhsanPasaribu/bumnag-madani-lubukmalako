@@ -27,50 +27,66 @@
             padding: 0 10px;
         }
         
-        /* Header with Logo Left */
+        /* Header Table Layout */
         .header {
             margin-bottom: 20px;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #86ae5f;
-            position: relative;
         }
         
-        .header-logo {
-            position: absolute;
-            left: 0;
-            top: 0;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
         }
         
-        .header-logo img {
-            width: 50px;
+        .header-table td {
+            vertical-align: middle;
+            padding: 5px;
+        }
+        
+        .logo-cell {
+            width: 120px;
+            text-align: left;
+        }
+        
+        .logo-cell img {
+            width: 100px;
             height: auto;
         }
         
-        .header-text {
+        .text-cell {
             text-align: center;
-            padding-top: 5px;
         }
         
-        .header h1 {
-            font-size: 16px;
+        .text-cell h1 {
+            font-size: 20px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
         
-        .header h2 {
-            font-size: 11px;
-            font-weight: normal;
+        .text-cell h2 {
+            font-size: 12px;
+            font-weight: bold;
             color: #555;
-            margin-bottom: 3px;
+            margin: 0 0 5px 0;
         }
         
-        .header .periode {
-            font-size: 10px;
+        .text-cell .periode {
+            font-size: 11px;
             color: #86ae5f;
-            font-weight: 600;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 4px 15px;
+            border: 1px solid #86ae5f;
+            display: inline-block;
+            border-radius: 20px;
+        }
+        
+        .spacer-cell {
+            width: 120px;
         }
         
         /* Footer */
@@ -184,18 +200,23 @@
 </head>
 <body>
 <div class="container">
-    {{-- Header with Logo Left --}}
+    {{-- Header with Table Layout --}}
     <div class="header">
-        @if(file_exists(public_path('images/logo.png')))
-            <div class="header-logo">
-                <img src="{{ public_path('images/logo.png') }}" alt="Logo">
-            </div>
-        @endif
-        <div class="header-text">
-            <h1>BUKU KAS HARIAN</h1>
-            <h2>Plasma Lubuk Malako - BUMNag Madani</h2>
-            <div class="periode">Periode: {{ $rekap['nama_bulan'] ?? '' }} {{ $tahun }}</div>
-        </div>
+        <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    @if(file_exists(public_path('images/logo.png')))
+                        <img src="{{ public_path('images/logo.png') }}" alt="Logo">
+                    @endif
+                </td>
+                <td class="text-cell">
+                    <h1>BUKU KAS HARIAN</h1>
+                    <h2>Plasma Lubuk Malako - BUMNag Madani</h2>
+                    <div class="periode">Periode: {{ $periode ?? ($rekap['nama_bulan'] ?? '') . ' ' . ($tahun ?? '') }}</div>
+                </td>
+                <td class="spacer-cell"></td>
+            </tr>
+        </table>
     </div>
     
     {{-- Summary --}}
@@ -242,10 +263,10 @@
             <tbody>
                 {{-- Saldo Awal Row --}}
                 <tr class="row-header">
-                    <td colspan="4" class="text-center">SALDO AWAL BULAN</td>
+                    <td colspan="4" class="text-center">SALDO AWAL {{ isset($bulan) && $bulan ? 'BULAN' : (isset($tahun) && $tahun ? 'TAHUN' : '') }}</td>
                     <td class="text-center">-</td>
                     <td class="text-center">-</td>
-                    <td class="text-center">0</td>
+                    <td class="text-center">{{ number_format($rekap['saldo_awal'] ?? 0, 0, ',', '.') }}</td>
                     <td class="text-center">-</td>
                 </tr>
                 
