@@ -5,83 +5,148 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
+/**
+ * Controller untuk mengelola pengumuman di admin
+ */
 class PengumumanController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar pengumuman
+     */
+    public function index(Request $request)
     {
-        $pengumuman = Pengumuman::latest()->paginate(10);
-        return view('admin.pengumuman.index', compact('pengumuman'));
+        $query = Pengumuman::latest();
+        
+        // Filter berdasarkan status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter berdasarkan prioritas
+        if ($request->has('prioritas') && $request->prioritas) {
+            $query->prioritas($request->prioritas);
+        }
+        
+        // Search
+        if ($request->has('cari') && $request->cari) {
+            $query->where('judul', 'like', '%' . $request->cari . '%');
+        }
+        
+        $pengumuman = $query->paginate(10)->withQueryString();
+        
+        // Statistik untuk cards
+        $totalAktif = Pengumuman::where('status', 'aktif')->count();
+        $totalPrioritasTinggi = Pengumuman::where('prioritas', 'tinggi')->count();
+        $totalTidakAktif = Pengumuman::where('status', 'tidak_aktif')->count();
+        
+        return view('admin.pengumuman.index', compact(
+            'pengumuman',
+            'totalAktif',
+            'totalPrioritasTinggi',
+            'totalTidakAktif'
+        ));
     }
-
+    
+    /**
+     * Menampilkan form tambah pengumuman
+     */
     public function create()
     {
         return view('admin.pengumuman.create');
     }
-
+    
+    /**
+     * Menyimpan pengumuman baru
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
-            'isi' => 'required|string',
+            'konten' => 'required|string',
             'prioritas' => 'required|in:rendah,sedang,tinggi',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'lampiran' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            'is_active' => 'boolean',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'status' => 'required|in:aktif,tidak_aktif',
+        ], [
+            'judul.required' => 'Judul pengumuman wajib diisi.',
+            'konten.required' => 'Konten pengumuman wajib diisi.',
+            'tanggal_mulai.required' => 'Tanggal mulai wajib diisi.',
+            'tanggal_berakhir.after_or_equal' => 'Tanggal berakhir harus setelah tanggal mulai.',
+            'lampiran.max' => 'Ukuran lampiran maksimal 5MB.',
         ]);
-
+        
+        // Handle upload lampiran
         if ($request->hasFile('lampiran')) {
-            $validated['lampiran'] = $request->file('lampiran')->store('pengumuman', 'public');
+            $file = $request->file('lampiran');
+            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/pengumuman'), $filename);
+            $validated['lampiran'] = $filename;
         }
-
-        $validated['is_active'] = $request->boolean('is_active');
-
+        
         Pengumuman::create($validated);
-
-        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil ditambahkan.');
+        
+        return redirect()->route('admin.pengumuman.index')
+            ->with('success', 'Pengumuman berhasil ditambahkan.');
     }
-
+    
+    /**
+     * Menampilkan form edit pengumuman
+     */
     public function edit(Pengumuman $pengumuman)
     {
         return view('admin.pengumuman.edit', compact('pengumuman'));
     }
-
+    
+    /**
+     * Menyimpan perubahan pengumuman
+     */
     public function update(Request $request, Pengumuman $pengumuman)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
-            'isi' => 'required|string',
+            'konten' => 'required|string',
             'prioritas' => 'required|in:rendah,sedang,tinggi',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'lampiran' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            'is_active' => 'boolean',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'status' => 'required|in:aktif,tidak_aktif',
         ]);
-
+        
+        // Handle upload lampiran baru
         if ($request->hasFile('lampiran')) {
-            if ($pengumuman->lampiran) {
-                Storage::disk('public')->delete($pengumuman->lampiran);
+            // Hapus lampiran lama
+            if ($pengumuman->lampiran && file_exists(public_path('uploads/pengumuman/' . $pengumuman->lampiran))) {
+                unlink(public_path('uploads/pengumuman/' . $pengumuman->lampiran));
             }
-            $validated['lampiran'] = $request->file('lampiran')->store('pengumuman', 'public');
+            
+            $file = $request->file('lampiran');
+            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/pengumuman'), $filename);
+            $validated['lampiran'] = $filename;
         }
-
-        $validated['is_active'] = $request->boolean('is_active');
-
+        
         $pengumuman->update($validated);
-
-        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil diperbarui.');
+        
+        return redirect()->route('admin.pengumuman.index')
+            ->with('success', 'Pengumuman berhasil diperbarui.');
     }
-
+    
+    /**
+     * Menghapus pengumuman
+     */
     public function destroy(Pengumuman $pengumuman)
     {
-        if ($pengumuman->lampiran) {
-            Storage::disk('public')->delete($pengumuman->lampiran);
+        // Hapus lampiran
+        if ($pengumuman->lampiran && file_exists(public_path('uploads/pengumuman/' . $pengumuman->lampiran))) {
+            unlink(public_path('uploads/pengumuman/' . $pengumuman->lampiran));
         }
         
         $pengumuman->delete();
-
-        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil dihapus.');
+        
+        return redirect()->route('admin.pengumuman.index')
+            ->with('success', 'Pengumuman berhasil dihapus.');
     }
 }
