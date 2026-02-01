@@ -253,23 +253,58 @@ class TransaksiKasController extends Controller
     }
     
     /**
-     * Export PDF Buku Kas Bulanan
+     * Export PDF Buku Kas
+     * Mode: bulanan (bulan+tahun), tahunan (tahun saja), semua (tanpa filter)
      */
     public function exportPdf(Request $request)
     {
-        $bulan = $request->get('bulan', date('n'));
-        $tahun = $request->get('tahun', date('Y'));
+        // Increase limits for large exports
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
         
-        $transaksi = TransaksiKas::bulan($bulan, $tahun)
-            ->urut()
-            ->get();
+        $bulan = $request->get('bulan');
+        $tahun = $request->get('tahun');
         
-        $rekap = TransaksiKas::getRekapBulanan($bulan, $tahun);
+        // Determine mode and get data
+        if ($bulan && $tahun) {
+            // Mode: Bulanan
+            $transaksi = TransaksiKas::bulan($bulan, $tahun)->urut()->get();
+            $rekap = TransaksiKas::getRekapBulanan($bulan, $tahun);
+            $periode = TransaksiKas::$namaBulan[$bulan] . ' ' . $tahun;
+            $filename = 'buku_kas_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . $tahun . '.pdf';
+        } elseif ($tahun && !$bulan) {
+            // Mode: Tahunan
+            $transaksi = TransaksiKas::tahun($tahun)->urut()->get();
+            $rekap = [
+                'periode' => 'Tahun ' . $tahun,
+                'jumlah_transaksi' => $transaksi->count(),
+                'saldo_awal' => TransaksiKas::getSaldoAwalBulan(1, $tahun),
+                'total_masuk' => $transaksi->sum('uang_masuk'),
+                'total_keluar' => $transaksi->sum('uang_keluar'),
+                'saldo_akhir' => TransaksiKas::tahun($tahun)->orderBy('tanggal', 'desc')->orderBy('no_urut', 'desc')->value('saldo') ?? 0,
+            ];
+            $rekap['selisih'] = $rekap['total_masuk'] - $rekap['total_keluar'];
+            $periode = 'Tahun ' . $tahun;
+            $filename = 'buku_kas_tahun_' . $tahun . '.pdf';
+        } else {
+            // Mode: Semua Data
+            $transaksi = TransaksiKas::urut()->get();
+            $lastTrx = TransaksiKas::orderBy('tanggal', 'desc')->orderBy('no_urut', 'desc')->first();
+            $rekap = [
+                'periode' => 'Semua Data',
+                'jumlah_transaksi' => $transaksi->count(),
+                'saldo_awal' => 0,
+                'total_masuk' => $transaksi->sum('uang_masuk'),
+                'total_keluar' => $transaksi->sum('uang_keluar'),
+                'saldo_akhir' => $lastTrx?->saldo ?? 0,
+            ];
+            $rekap['selisih'] = $rekap['total_masuk'] - $rekap['total_keluar'];
+            $periode = 'Semua Data';
+            $filename = 'buku_kas_lengkap.pdf';
+        }
         
-        $pdf = Pdf::loadView('pdf.buku-kas', compact('transaksi', 'rekap', 'bulan', 'tahun'));
+        $pdf = Pdf::loadView('pdf.buku-kas', compact('transaksi', 'rekap', 'bulan', 'tahun', 'periode'));
         $pdf->setPaper('a4', 'landscape');
-        
-        $filename = 'buku_kas_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . $tahun . '.pdf';
         
         return $pdf->download($filename);
     }
@@ -286,16 +321,29 @@ class TransaksiKasController extends Controller
     }
     
     /**
-     * Export Excel Buku Kas Bulanan
+     * Export Excel Buku Kas
+     * Mode: bulanan (bulan+tahun), tahunan (tahun saja), semua (tanpa filter)
      */
     public function exportExcel(Request $request)
     {
-        $bulan = $request->get('bulan', date('n'));
-        $tahun = $request->get('tahun', date('Y'));
+        // Increase limits for large exports
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
         
-        $filename = 'Buku_Kas_' . TransaksiKas::$namaBulan[$bulan] . '_' . $tahun . '.xlsx';
+        $bulan = $request->get('bulan');
+        $tahun = $request->get('tahun');
         
-        return Excel::download(new TransaksiKasExport($bulan, $tahun), $filename);
+        // Determine filename based on mode
+        if ($bulan && $tahun) {
+            $filename = 'Buku_Kas_' . TransaksiKas::$namaBulan[$bulan] . '_' . $tahun . '.xlsx';
+            return Excel::download(new TransaksiKasExport((int) $bulan, (int) $tahun), $filename);
+        } elseif ($tahun && !$bulan) {
+            $filename = 'Buku_Kas_Tahun_' . $tahun . '.xlsx';
+            return Excel::download(new TransaksiKasExport(null, (int) $tahun), $filename);
+        } else {
+            $filename = 'Buku_Kas_Lengkap.xlsx';
+            return Excel::download(new TransaksiKasExport(null, null), $filename);
+        }
     }
     
     /**
