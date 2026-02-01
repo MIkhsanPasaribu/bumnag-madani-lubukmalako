@@ -5,24 +5,61 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
 use App\Models\Pengumuman;
-use App\Models\LaporanKeuangan;
-use App\Models\ProfilBumnag;
+use App\Models\TransaksiKas;
+use Illuminate\Http\Request;
 
+/**
+ * Controller untuk dashboard admin
+ */
 class DashboardController extends Controller
 {
+    /**
+     * Menampilkan dashboard admin dengan statistik ringkasan
+     */
     public function index()
     {
-        $stats = [
-            'berita' => Berita::count(),
-            'pengumuman' => Pengumuman::count(),
-            'laporan' => LaporanKeuangan::count(),
-            'total_pendapatan' => LaporanKeuangan::sum('pendapatan'),
-            'total_pengeluaran' => LaporanKeuangan::sum('pengeluaran'),
+        // Statistik total
+        $totalBerita = Berita::count();
+        $totalBeritaPublished = Berita::published()->count();
+        $totalPengumuman = Pengumuman::count();
+        $totalPengumumanAktif = Pengumuman::aktif()->count();
+        $totalTransaksi = TransaksiKas::count();
+        
+        // Berita terbaru (5)
+        $beritaTerbaru = Berita::latest()->take(5)->get();
+        
+        // Pengumuman terbaru (5)
+        $pengumumanTerbaru = Pengumuman::latest()->take(5)->get();
+        
+        // Statistik keuangan tahun ini dari TransaksiKas
+        $tahunIni = date('Y');
+        $dataTransaksi = TransaksiKas::tahun($tahunIni)->get();
+        $statistikKeuangan = [
+            'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
+            'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
+            'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
+            'jumlah_transaksi' => $dataTransaksi->count(),
         ];
         
-        $beritaTerbaru = Berita::latest('published_at')->take(5)->get();
-        $pengumumanTerbaru = Pengumuman::where('is_active', true)->latest()->take(5)->get();
+        // Data untuk chart mini dari rekap bulanan
+        $rekapBulanan = TransaksiKas::getRekapTahunan($tahunIni);
+        $chartData = [
+            'labels' => array_column($rekapBulanan, 'nama_bulan'),
+            'pendapatan' => array_column($rekapBulanan, 'total_masuk'),
+            'pengeluaran' => array_column($rekapBulanan, 'total_keluar'),
+        ];
         
-        return view('admin.dashboard', compact('stats', 'beritaTerbaru', 'pengumumanTerbaru'));
+        return view('admin.dashboard', compact(
+            'totalBerita',
+            'totalBeritaPublished',
+            'totalPengumuman',
+            'totalPengumumanAktif',
+            'totalTransaksi',
+            'beritaTerbaru',
+            'pengumumanTerbaru',
+            'statistikKeuangan',
+            'chartData',
+            'tahunIni'
+        ));
     }
 }
