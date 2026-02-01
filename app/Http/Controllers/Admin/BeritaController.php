@@ -5,88 +5,151 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Controller untuk mengelola berita di admin
+ */
 class BeritaController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar berita
+     */
+    public function index(Request $request)
     {
-        $berita = Berita::latest('published_at')->paginate(10);
-        return view('admin.berita.index', compact('berita'));
+        $query = Berita::with('penulis')->latest();
+        
+        // Filter berdasarkan status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Search
+        if ($request->has('cari') && $request->cari) {
+            $query->where('judul', 'like', '%' . $request->cari . '%');
+        }
+        
+        $berita = $query->paginate(10)->withQueryString();
+        
+        // Statistik untuk cards
+        $totalPublished = Berita::where('status', 'published')->count();
+        $totalDraft = Berita::where('status', 'draft')->count();
+        $totalViews = Berita::sum('views');
+        
+        return view('admin.berita.index', compact(
+            'berita',
+            'totalPublished',
+            'totalDraft',
+            'totalViews'
+        ));
     }
-
+    
+    /**
+     * Menampilkan form tambah berita
+     */
     public function create()
     {
         return view('admin.berita.create');
     }
-
+    
+    /**
+     * Menyimpan berita baru
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'ringkasan' => 'nullable|string|max:500',
-            'kategori' => 'nullable|string|max:100',
-            'penulis' => 'nullable|string|max:100',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'published_at' => 'nullable|date',
-            'is_published' => 'boolean',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'status' => 'required|in:draft,published',
+        ], [
+            'judul.required' => 'Judul berita wajib diisi.',
+            'konten.required' => 'Konten berita wajib diisi.',
+            'gambar.image' => 'File harus berupa gambar.',
+            'gambar.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
-
+        
+        // Handle upload gambar
         if ($request->hasFile('gambar')) {
-            $validated['gambar'] = $request->file('gambar')->store('berita', 'public');
+            $file = $request->file('gambar');
+            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/berita'), $filename);
+            $validated['gambar'] = $filename;
         }
-
-        $validated['slug'] = Str::slug($validated['judul']) . '-' . time();
-        $validated['is_published'] = $request->boolean('is_published');
-        $validated['published_at'] = $validated['published_at'] ?? now();
-
+        
+        // Set penulis dan tanggal publikasi
+        $validated['penulis_id'] = Auth::id();
+        if ($validated['status'] === 'published') {
+            $validated['tanggal_publikasi'] = now();
+        }
+        
         Berita::create($validated);
-
-        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil ditambahkan.');
+        
+        return redirect()->route('admin.berita.index')
+            ->with('success', 'Berita berhasil ditambahkan.');
     }
-
-    public function edit(Berita $berita)
+    
+    /**
+     * Menampilkan form edit berita
+     */
+    public function edit(Berita $beritum)
     {
-        return view('admin.berita.edit', compact('berita'));
+        return view('admin.berita.edit', ['berita' => $beritum]);
     }
-
-    public function update(Request $request, Berita $berita)
+    
+    /**
+     * Menyimpan perubahan berita
+     */
+    public function update(Request $request, Berita $beritum)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'ringkasan' => 'nullable|string|max:500',
-            'kategori' => 'nullable|string|max:100',
-            'penulis' => 'nullable|string|max:100',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'published_at' => 'nullable|date',
-            'is_published' => 'boolean',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'status' => 'required|in:draft,published',
         ]);
-
+        
+        // Handle upload gambar baru
         if ($request->hasFile('gambar')) {
-            if ($berita->gambar) {
-                Storage::disk('public')->delete($berita->gambar);
+            // Hapus gambar lama
+            if ($beritum->gambar && file_exists(public_path('uploads/berita/' . $beritum->gambar))) {
+                unlink(public_path('uploads/berita/' . $beritum->gambar));
             }
-            $validated['gambar'] = $request->file('gambar')->store('berita', 'public');
-        }
-
-        $validated['is_published'] = $request->boolean('is_published');
-
-        $berita->update($validated);
-
-        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil diperbarui.');
-    }
-
-    public function destroy(Berita $berita)
-    {
-        if ($berita->gambar) {
-            Storage::disk('public')->delete($berita->gambar);
+            
+            $file = $request->file('gambar');
+            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/berita'), $filename);
+            $validated['gambar'] = $filename;
         }
         
-        $berita->delete();
-
-        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil dihapus.');
+        // Set tanggal publikasi jika baru dipublish
+        if ($validated['status'] === 'published' && $beritum->status !== 'published') {
+            $validated['tanggal_publikasi'] = now();
+        }
+        
+        $beritum->update($validated);
+        
+        return redirect()->route('admin.berita.index')
+            ->with('success', 'Berita berhasil diperbarui.');
+    }
+    
+    /**
+     * Menghapus berita
+     */
+    public function destroy(Berita $beritum)
+    {
+        // Hapus gambar
+        if ($beritum->gambar && file_exists(public_path('uploads/berita/' . $beritum->gambar))) {
+            unlink(public_path('uploads/berita/' . $beritum->gambar));
+        }
+        
+        $beritum->delete();
+        
+        return redirect()->route('admin.berita.index')
+            ->with('success', 'Berita berhasil dihapus.');
     }
 }
