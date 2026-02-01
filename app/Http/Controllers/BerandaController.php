@@ -36,11 +36,16 @@ class BerandaController extends Controller
         // Statistik keuangan tahun ini dari TransaksiKas
         $tahunIni = date('Y');
         $dataTransaksi = TransaksiKas::tahun($tahunIni)->get();
+        
+        // Rekap bulanan untuk menghitung jumlah bulan yang ada data
+        $rekapBulanan = TransaksiKas::getRekapTahunan($tahunIni);
+        
         $statistikKeuangan = [
             'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
             'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
             'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
             'jumlah_transaksi' => $dataTransaksi->count(),
+            'jumlah_laporan' => count($rekapBulanan), // Jumlah bulan yang ada transaksi
         ];
         
         // Transaksi terbaru
