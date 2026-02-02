@@ -10,19 +10,7 @@
     {{-- Header --}}
     <header class="mb-8">
         <div class="flex items-center gap-3 mb-4">
-            @if($pengumuman->prioritas === 'tinggi')
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
-                    Prioritas {{ ucfirst($pengumuman->prioritas) }}
-                </span>
-            @elseif($pengumuman->prioritas === 'sedang')
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">
-                    Prioritas {{ ucfirst($pengumuman->prioritas) }}
-                </span>
-            @else
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
-                    Prioritas {{ ucfirst($pengumuman->prioritas) }}
-                </span>
-            @endif
+            <x-prioritas-badge :prioritas="$pengumuman->prioritas" size="lg" :showLabel="true" />
         </div>
         
         <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">{{ $pengumuman->judul }}</h1>
@@ -41,8 +29,8 @@
     </header>
     
     {{-- Content --}}
-    <div class="prose prose-lg prose-gray max-w-none mb-8">
-        {!! nl2br(e($pengumuman->konten)) !!}
+    <div class="prose-content text-gray-700 leading-relaxed mb-8">
+        {!! $pengumuman->konten !!}
     </div>
     
     {{-- Attachment --}}
@@ -73,19 +61,7 @@
                 @foreach($pengumumanLain as $item)
                     <article class="bento-card flex gap-4 group">
                         <div class="flex-shrink-0">
-                            @if($item->prioritas === 'tinggi')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                    {{ ucfirst($item->prioritas) }}
-                                </span>
-                            @elseif($item->prioritas === 'sedang')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-                                    {{ ucfirst($item->prioritas) }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                    {{ ucfirst($item->prioritas) }}
-                                </span>
-                            @endif
+                            <x-prioritas-badge :prioritas="$item->prioritas" size="sm" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
