@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use App\Models\KategoriBerita;
 use Illuminate\Http\Request;
 
 /**
  * Controller untuk halaman berita publik
+ * Mendukung fitur: Kategori, Featured, Pinned, Related News
  */
 class BeritaController extends Controller
 {
@@ -15,20 +17,72 @@ class BeritaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Berita::published()->latest();
+        $query = Berita::with('kategori')->published();
         
-        // Search functionality
-        if ($request->has('cari') && $request->cari) {
-            $cari = $request->cari;
-            $query->where(function ($q) use ($cari) {
-                $q->where('judul', 'like', "%{$cari}%")
-                  ->orWhere('konten', 'like', "%{$cari}%");
+        // Filter berdasarkan kategori (via query param)
+        if ($request->filled('kategori')) {
+            $query->whereHas('kategori', function ($q) use ($request) {
+                $q->where('slug', $request->kategori);
             });
         }
         
-        $berita = $query->paginate(9)->withQueryString();
+        // Search functionality
+        if ($request->filled('cari')) {
+            $query->search($request->cari);
+        }
         
-        return view('public.berita.index', compact('berita'));
+        // Urutkan dengan pinned di atas
+        $berita = $query->latest()->paginate(9)->withQueryString();
+        
+        // Ambil berita featured untuk highlight
+        $beritaFeatured = Berita::with('kategori')
+            ->published()
+            ->featured()
+            ->latest()
+            ->limit(3)
+            ->get();
+        
+        // Ambil semua kategori untuk filter
+        $kategoris = KategoriBerita::active()->ordered()->withCount([
+            'berita' => function ($q) {
+                $q->published();
+            }
+        ])->get();
+        
+        // Kategori aktif (jika ada filter)
+        $kategoriAktif = $request->filled('kategori') 
+            ? $kategoris->firstWhere('slug', $request->kategori) 
+            : null;
+        
+        return view('public.berita.index', compact(
+            'berita',
+            'beritaFeatured',
+            'kategoris',
+            'kategoriAktif'
+        ));
+    }
+    
+    /**
+     * Menampilkan berita berdasarkan kategori
+     */
+    public function byKategori($slug)
+    {
+        $kategori = KategoriBerita::where('slug', $slug)->firstOrFail();
+        
+        $berita = Berita::with('kategori')
+            ->published()
+            ->byKategori($kategori->id)
+            ->latest()
+            ->paginate(9);
+        
+        // Ambil semua kategori untuk sidebar
+        $kategoris = KategoriBerita::active()->ordered()->withCount([
+            'berita' => function ($q) {
+                $q->published();
+            }
+        ])->get();
+        
+        return view('public.berita.kategori', compact('berita', 'kategori', 'kategoris'));
     }
     
     /**
@@ -36,20 +90,35 @@ class BeritaController extends Controller
      */
     public function show($slug)
     {
-        $berita = Berita::published()
+        $berita = Berita::with(['kategori', 'gambarGallery', 'penulis'])
+            ->published()
             ->where('slug', $slug)
             ->firstOrFail();
         
         // Increment view count
         $berita->incrementViews();
         
-        // Berita terkait (random 3 berita lainnya)
-        $beritaTerkait = Berita::published()
-            ->where('id', '!=', $berita->id)
-            ->inRandomOrder()
-            ->take(3)
-            ->get();
+        // Berita terkait berdasarkan kategori
+        $beritaTerkait = $berita->getRelatedByKategori(4);
         
-        return view('public.berita.show', compact('berita', 'beritaTerkait'));
+        // Jika berita terkait kurang dari 4, tambahkan berita random
+        if ($beritaTerkait->count() < 4) {
+            $excludeIds = $beritaTerkait->pluck('id')->push($berita->id)->toArray();
+            $additionalBerita = Berita::published()
+                ->whereNotIn('id', $excludeIds)
+                ->inRandomOrder()
+                ->limit(4 - $beritaTerkait->count())
+                ->get();
+            $beritaTerkait = $beritaTerkait->concat($additionalBerita);
+        }
+        
+        // Ambil kategori untuk sidebar
+        $kategoris = KategoriBerita::active()->ordered()->withCount([
+            'berita' => function ($q) {
+                $q->published();
+            }
+        ])->get();
+        
+        return view('public.berita.show', compact('berita', 'beritaTerkait', 'kategoris'));
     }
 }
