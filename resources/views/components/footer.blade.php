@@ -78,9 +78,15 @@
                 <p class="text-gray-400 text-sm text-center md:text-left">
                     &copy; {{ date('Y') }} BUMNag Madani Lubuk Malako. Hak Cipta Dilindungi.
                 </p>
-                <p class="text-gray-500 text-xs">
-                    Dibangun dengan ❤️ untuk Nagari Lubuk Malako
-                </p>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('tim-pengembang') }}" class="text-gray-500 hover:text-primary text-xs transition-colors">
+                        Tim Pengembang
+                    </a>
+                    <span class="text-gray-700">•</span>
+                    <p class="text-gray-500 text-xs">
+                        Dibangun dengan ❤️ untuk Nagari Lubuk Malako
+                    </p>
+                </div>
             </div>
         </div>
     </div>
