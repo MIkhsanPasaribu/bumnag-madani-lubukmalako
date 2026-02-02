@@ -13,8 +13,10 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProfilController as AdminProfilController;
 use App\Http\Controllers\Admin\BeritaController as AdminBeritaController;
 use App\Http\Controllers\Admin\PengumumanController as AdminPengumumanController;
+use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\TransaksiKasController;
 use App\Http\Controllers\Admin\PasswordController;
+use App\Http\Controllers\UploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +50,7 @@ Route::get('/transparansi/excel-semua', [TransparansiController::class, 'downloa
 
 // Berita
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
+Route::get('/berita/kategori/{slug}', [BeritaController::class, 'byKategori'])->name('berita.kategori');
 Route::get('/berita/{slug}', [BeritaController::class, 'show'])->name('berita.show');
 
 // Pengumuman
@@ -77,14 +80,44 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
+    // Upload Image for Rich Editor
+    Route::post('/upload-image', [UploadController::class, 'uploadImage'])->name('upload.image');
+    
     // Profil BUMNag (Edit Only)
     Route::get('/profil', [AdminProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil', [AdminProfilController::class, 'update'])->name('profil.update');
     
-    // CRUD Berita
-    Route::resource('berita', AdminBeritaController::class);
+    // CRUD Kategori Berita
+    Route::post('/kategori-berita/{kategori_berita}/toggle-status', [KategoriBeritaController::class, 'toggleStatus'])
+        ->name('kategori-berita.toggle-status');
+    Route::post('/kategori-berita/update-order', [KategoriBeritaController::class, 'updateOrder'])
+        ->name('kategori-berita.update-order');
+    Route::resource('kategori-berita', KategoriBeritaController::class)->parameters([
+        'kategori-berita' => 'kategori_berita'
+    ]);
+    
+    // CRUD Berita - dengan explicit parameter naming
+    Route::post('/berita/{berita}/toggle-featured', [AdminBeritaController::class, 'toggleFeatured'])
+        ->name('berita.toggle-featured');
+    Route::post('/berita/{berita}/toggle-pinned', [AdminBeritaController::class, 'togglePinned'])
+        ->name('berita.toggle-pinned');
+    Route::post('/berita/{id}/restore', [AdminBeritaController::class, 'restore'])
+        ->name('berita.restore');
+    Route::delete('/berita/{id}/force-delete', [AdminBeritaController::class, 'forceDestroy'])
+        ->name('berita.force-delete');
+    Route::resource('berita', AdminBeritaController::class)->parameters([
+        'berita' => 'berita'
+    ]);
     
     // CRUD Pengumuman
+    Route::post('/pengumuman/{pengumuman}/toggle-featured', [AdminPengumumanController::class, 'toggleFeatured'])
+        ->name('pengumuman.toggle-featured');
+    Route::post('/pengumuman/{pengumuman}/toggle-pinned', [AdminPengumumanController::class, 'togglePinned'])
+        ->name('pengumuman.toggle-pinned');
+    Route::post('/pengumuman/{id}/restore', [AdminPengumumanController::class, 'restore'])
+        ->name('pengumuman.restore');
+    Route::delete('/pengumuman/{id}/force-delete', [AdminPengumumanController::class, 'forceDestroy'])
+        ->name('pengumuman.force-delete');
     Route::resource('pengumuman', AdminPengumumanController::class);
     
     // CRUD Transaksi Kas (Buku Kas Harian)
