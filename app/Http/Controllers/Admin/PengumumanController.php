@@ -3,49 +3,77 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PengumumanRequest;
 use App\Models\Pengumuman;
+use App\Traits\HasFileUpload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * Controller untuk mengelola pengumuman di admin
+ * Termasuk fitur: View tracking, Featured/Pinned, SEO, Archive
  */
 class PengumumanController extends Controller
 {
+    use HasFileUpload;
+
+    /**
+     * Folder untuk menyimpan lampiran pengumuman
+     */
+    private const UPLOAD_FOLDER = 'pengumuman';
+
     /**
      * Menampilkan daftar pengumuman
      */
     public function index(Request $request)
     {
-        $query = Pengumuman::latest();
+        $query = Pengumuman::query();
         
         // Filter berdasarkan status
-        if ($request->has('status') && $request->status) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
         
         // Filter berdasarkan prioritas
-        if ($request->has('prioritas') && $request->prioritas) {
+        if ($request->filled('prioritas')) {
             $query->prioritas($request->prioritas);
+        }
+
+        // Filter featured
+        if ($request->filled('featured')) {
+            $query->where('is_featured', $request->featured === '1');
+        }
+
+        // Filter pinned
+        if ($request->filled('pinned')) {
+            $query->where('is_pinned', $request->pinned === '1');
+        }
+
+        // Filter archived (soft deleted)
+        if ($request->filled('archived') && $request->archived === '1') {
+            $query->onlyTrashed();
         }
         
         // Search
-        if ($request->has('cari') && $request->cari) {
-            $query->where('judul', 'like', '%' . $request->cari . '%');
+        if ($request->filled('cari')) {
+            $query->search($request->cari);
         }
         
-        $pengumuman = $query->paginate(10)->withQueryString();
+        $pengumuman = $query->latest()->paginate(10)->withQueryString();
         
         // Statistik untuk cards
-        $totalAktif = Pengumuman::where('status', 'aktif')->count();
+        $totalAktif = Pengumuman::aktif()->count();
         $totalPrioritasTinggi = Pengumuman::where('prioritas', 'tinggi')->count();
-        $totalTidakAktif = Pengumuman::where('status', 'tidak_aktif')->count();
+        $totalTidakAktif = Pengumuman::tidakAktif()->count();
+        $totalViews = Pengumuman::sum('views');
+        $totalArchived = Pengumuman::onlyTrashed()->count();
         
         return view('admin.pengumuman.index', compact(
             'pengumuman',
             'totalAktif',
             'totalPrioritasTinggi',
-            'totalTidakAktif'
+            'totalTidakAktif',
+            'totalViews',
+            'totalArchived'
         ));
     }
     
@@ -60,30 +88,17 @@ class PengumumanController extends Controller
     /**
      * Menyimpan pengumuman baru
      */
-    public function store(Request $request)
+    public function store(PengumumanRequest $request)
     {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'prioritas' => 'required|in:rendah,sedang,tinggi',
-            'lampiran' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'status' => 'required|in:aktif,tidak_aktif',
-        ], [
-            'judul.required' => 'Judul pengumuman wajib diisi.',
-            'konten.required' => 'Konten pengumuman wajib diisi.',
-            'tanggal_mulai.required' => 'Tanggal mulai wajib diisi.',
-            'tanggal_berakhir.after_or_equal' => 'Tanggal berakhir harus setelah tanggal mulai.',
-            'lampiran.max' => 'Ukuran lampiran maksimal 5MB.',
-        ]);
+        $validated = $request->validated();
         
         // Handle upload lampiran
         if ($request->hasFile('lampiran')) {
-            $file = $request->file('lampiran');
-            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/pengumuman'), $filename);
-            $validated['lampiran'] = $filename;
+            $validated['lampiran'] = $this->uploadFile(
+                $request->file('lampiran'),
+                self::UPLOAD_FOLDER,
+                $validated['judul']
+            );
         }
         
         Pengumuman::create($validated);
@@ -103,29 +118,18 @@ class PengumumanController extends Controller
     /**
      * Menyimpan perubahan pengumuman
      */
-    public function update(Request $request, Pengumuman $pengumuman)
+    public function update(PengumumanRequest $request, Pengumuman $pengumuman)
     {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'prioritas' => 'required|in:rendah,sedang,tinggi',
-            'lampiran' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_berakhir' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'status' => 'required|in:aktif,tidak_aktif',
-        ]);
+        $validated = $request->validated();
         
-        // Handle upload lampiran baru
+        // Handle upload lampiran baru dengan auto-delete lampiran lama
         if ($request->hasFile('lampiran')) {
-            // Hapus lampiran lama
-            if ($pengumuman->lampiran && file_exists(public_path('uploads/pengumuman/' . $pengumuman->lampiran))) {
-                unlink(public_path('uploads/pengumuman/' . $pengumuman->lampiran));
-            }
-            
-            $file = $request->file('lampiran');
-            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/pengumuman'), $filename);
-            $validated['lampiran'] = $filename;
+            $validated['lampiran'] = $this->handleFileUpload(
+                $request->file('lampiran'),
+                $pengumuman->lampiran,
+                self::UPLOAD_FOLDER,
+                $validated['judul']
+            );
         }
         
         $pengumuman->update($validated);
@@ -135,18 +139,67 @@ class PengumumanController extends Controller
     }
     
     /**
-     * Menghapus pengumuman
+     * Menghapus pengumuman (soft delete / archive)
      */
     public function destroy(Pengumuman $pengumuman)
     {
-        // Hapus lampiran
-        if ($pengumuman->lampiran && file_exists(public_path('uploads/pengumuman/' . $pengumuman->lampiran))) {
-            unlink(public_path('uploads/pengumuman/' . $pengumuman->lampiran));
-        }
-        
-        $pengumuman->delete();
+        $pengumuman->delete(); // Soft delete
         
         return redirect()->route('admin.pengumuman.index')
-            ->with('success', 'Pengumuman berhasil dihapus.');
+            ->with('success', 'Pengumuman berhasil diarsipkan.');
+    }
+
+    /**
+     * Menghapus pengumuman secara permanen
+     */
+    public function forceDestroy($id)
+    {
+        $pengumuman = Pengumuman::onlyTrashed()->findOrFail($id);
+        
+        // Hapus lampiran
+        $this->deleteFile($pengumuman->lampiran, self::UPLOAD_FOLDER);
+        
+        $pengumuman->forceDelete();
+        
+        return redirect()->route('admin.pengumuman.index')
+            ->with('success', 'Pengumuman berhasil dihapus permanen.');
+    }
+
+    /**
+     * Restore pengumuman yang diarsipkan
+     */
+    public function restore($id)
+    {
+        $pengumuman = Pengumuman::onlyTrashed()->findOrFail($id);
+        $pengumuman->restore();
+        
+        return redirect()->route('admin.pengumuman.index')
+            ->with('success', 'Pengumuman berhasil dipulihkan dari arsip.');
+    }
+
+    /**
+     * Toggle status featured
+     */
+    public function toggleFeatured(Pengumuman $pengumuman)
+    {
+        $pengumuman->toggleFeatured();
+        
+        $status = $pengumuman->is_featured ? 'ditambahkan ke' : 'dihapus dari';
+        
+        return redirect()->back()
+            ->with('success', "Pengumuman berhasil {$status} featured.");
+    }
+
+    /**
+     * Toggle status pinned
+     */
+    public function togglePinned(Pengumuman $pengumuman)
+    {
+        $pengumuman->togglePinned();
+        
+        $status = $pengumuman->is_pinned ? 'di-pin' : 'di-unpin';
+        
+        return redirect()->back()
+            ->with('success', "Pengumuman berhasil {$status}.");
     }
 }
