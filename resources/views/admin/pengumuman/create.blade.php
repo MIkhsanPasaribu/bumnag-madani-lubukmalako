@@ -58,21 +58,15 @@
                         @enderror
                     </div>
                     
-                    {{-- Konten --}}
-                    <div>
-                        <label for="konten" class="form-label">
-                            Isi Pengumuman <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="konten" 
-                                  name="konten" 
-                                  rows="8" 
-                                  class="form-input @error('konten') border-red-500 ring-red-500 @enderror"
-                                  placeholder="Tulis isi pengumuman di sini..."
-                                  required>{{ old('konten') }}</textarea>
-                        @error('konten')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    {{-- Konten dengan Rich Text Editor --}}
+                    <x-rich-editor 
+                        name="konten" 
+                        :value="old('konten', '')" 
+                        label="Isi Pengumuman"
+                        :required="true"
+                        placeholder="Tulis isi pengumuman di sini..."
+                        :height="300"
+                    />
                 </div>
             </div>
             
