@@ -130,8 +130,7 @@
             @endif
         </div>
     </div>
-    <br>
-    <br>
+    
     {{-- Struktur Organisasi - Neat Tree Style --}}
     <div class="mt-16 overflow-x-auto pb-12">
         <div class="text-center mb-12">
