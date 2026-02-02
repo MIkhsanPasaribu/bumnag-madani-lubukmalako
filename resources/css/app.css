@@ -4,6 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   SUMMERNOTE COLOR PICKER FIX
+   Harus di luar @layer agar tidak di-reset Tailwind
+   ============================================ */
+.note-color-palette .note-color-btn {
+    background-color: inherit !important;
+}
+
+/* Force inline styles to work on color buttons */
+.note-color-palette button[style] {
+    background-color: unset;
+}
+
 /* CSS Custom Properties untuk warna BUMNag */
 :root {
     --color-cream: #fffaed;
@@ -18,6 +31,11 @@
 @layer base {
     html {
         @apply scroll-smooth;
+    }
+
+    /* Exclude Summernote elements from Tailwind button reset */
+    .note-color-btn {
+        background-color: revert;
     }
 
     body {
@@ -303,5 +321,105 @@
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
+    }
+
+    /* Prose/Content Styling untuk konten dari rich editor */
+    .prose-content ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin: 0.75rem 0;
+    }
+
+    .prose-content ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin: 0.75rem 0;
+    }
+
+    .prose-content ul ul {
+        list-style-type: circle;
+    }
+
+    .prose-content ol ol {
+        list-style-type: lower-alpha;
+    }
+
+    .prose-content li {
+        margin-bottom: 0.25rem;
+        display: list-item;
+    }
+
+    .prose-content p {
+        margin-bottom: 0.75rem;
+    }
+
+    .prose-content h1,
+    .prose-content h2,
+    .prose-content h3,
+    .prose-content h4,
+    .prose-content h5,
+    .prose-content h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .prose-content blockquote {
+        border-left: 4px solid #86ae5f;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .prose-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    .prose-content table td,
+    .prose-content table th {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+    }
+
+    .prose-content table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+    }
+
+    .prose-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .prose-content a {
+        color: #86ae5f;
+        text-decoration: underline;
+    }
+
+    .prose-content a:hover {
+        color: #6b9a45;
+    }
+
+    .prose-content code {
+        background-color: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.875em;
+    }
+
+    .prose-content pre {
+        background-color: #1f2937;
+        color: #f3f4f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        margin: 1rem 0;
     }
 }
