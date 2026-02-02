@@ -126,32 +126,16 @@
                                         <p class="text-sm text-gray-500 line-clamp-1 mt-0.5">{{ Str::limit(strip_tags($item->konten), 50) }}</p>
                                         {{-- Mobile: Show badges inline --}}
                                         <div class="flex flex-wrap gap-2 mt-2 sm:hidden">
-                                            @if($item->prioritas === 'tinggi')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{{ ucfirst($item->prioritas) }}</span>
-                                            @elseif($item->prioritas === 'sedang')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">{{ ucfirst($item->prioritas) }}</span>
-                                            @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">{{ ucfirst($item->prioritas) }}</span>
-                                            @endif
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $item->status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
-                                                {{ $item->status === 'aktif' ? 'Aktif' : 'Tidak Aktif' }}
-                                            </span>
+                                            <x-prioritas-badge :prioritas="$item->prioritas" size="sm" />
+                                            <x-status-badge :status="$item->status" type="pengumuman" />
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 text-center hidden sm:table-cell">
-                                    @if($item->prioritas === 'tinggi')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{{ ucfirst($item->prioritas) }}</span>
-                                    @elseif($item->prioritas === 'sedang')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">{{ ucfirst($item->prioritas) }}</span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">{{ ucfirst($item->prioritas) }}</span>
-                                    @endif
+                                    <x-prioritas-badge :prioritas="$item->prioritas" />
                                 </td>
                                 <td class="px-4 py-4 text-center hidden sm:table-cell">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $item->status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
-                                        {{ $item->status === 'aktif' ? 'Aktif' : 'Tidak Aktif' }}
-                                    </span>
+                                    <x-status-badge :status="$item->status" type="pengumuman" />
                                 </td>
                                 <td class="px-4 py-4 hidden md:table-cell">
                                     <div class="text-sm">
