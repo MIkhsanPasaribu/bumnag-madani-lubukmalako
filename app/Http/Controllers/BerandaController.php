@@ -6,6 +6,7 @@ use App\Models\Berita;
 use App\Models\Pengumuman;
 use App\Models\ProfilBumnag;
 use App\Models\TransaksiKas;
+use App\Models\GaleriBumnag;
 use Illuminate\Http\Request;
 
 /**
@@ -48,6 +49,9 @@ class BerandaController extends Controller
             'jumlah_laporan' => count($rekapBulanan), // Jumlah bulan yang ada transaksi
         ];
         
+        // Galeri BUMNag untuk slider (8 foto terbaru)
+        $galeriFoto = GaleriBumnag::aktif()->ordered()->limit(8)->get();
+        
         // Transaksi terbaru
         $transaksiTerbaru = TransaksiKas::terbaru()->first();
         
@@ -61,6 +65,7 @@ class BerandaController extends Controller
             'beritaTerbaru',
             'pengumumanAktif',
             'statistikKeuangan',
+            'galeriFoto',
             'transaksiTerbaru',
             'totalBerita',
             'totalPengumuman',
