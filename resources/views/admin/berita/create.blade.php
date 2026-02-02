@@ -25,7 +25,7 @@
 @endsection
 
 @section('content')
-<form action="{{ route('admin.berita.store') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.berita.store') }}" method="POST" enctype="multipart/form-data" x-data="beritaForm()">
     @csrf
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -57,6 +57,22 @@
                             <p class="form-error mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Kategori --}}
+                    <div>
+                        <label for="kategori_id" class="form-label">Kategori</label>
+                        <select id="kategori_id" name="kategori_id" class="form-input @error('kategori_id') border-red-500 @enderror">
+                            <option value="">-- Pilih Kategori --</option>
+                            @foreach($kategoris as $kategori)
+                                <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                    {{ $kategori->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('kategori_id')
+                            <p class="form-error mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                     
                     {{-- Ringkasan --}}
                     <div>
@@ -72,20 +88,93 @@
                         @enderror
                     </div>
                     
-                    {{-- Konten --}}
+                    {{-- Konten dengan Rich Text Editor --}}
+                    <x-rich-editor 
+                        name="konten" 
+                        :value="old('konten', '')" 
+                        label="Konten Berita"
+                        :required="true"
+                        placeholder="Tulis isi berita lengkap di sini..."
+                    />
+                </div>
+            </div>
+
+            {{-- Gallery Gambar --}}
+            <div class="bento-card-flat">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Gallery Gambar (Opsional)
+                </h2>
+                
+                <div>
+                    <input type="file" 
+                           name="gallery[]" 
+                           multiple
+                           accept="image/*" 
+                           class="block w-full text-sm text-gray-500 
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-lg file:border-0
+                                  file:text-sm file:font-medium
+                                  file:bg-primary/10 file:text-primary
+                                  hover:file:bg-primary/20 
+                                  file:transition-colors file:cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-2">
+                        Pilih beberapa gambar sekaligus. Format: JPG, PNG, WebP. Maks 2MB per file.
+                    </p>
+                    @error('gallery.*')
+                        <p class="form-error mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- SEO Meta Tags --}}
+            <div class="bento-card-flat" x-data="{ open: false }">
+                <button type="button" @click="open = !open" class="w-full flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        SEO & Meta Tags
+                    </h2>
+                    <svg :class="{'rotate-180': open}" class="h-5 w-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                
+                <div x-show="open" x-collapse class="mt-4 space-y-4">
                     <div>
-                        <label for="konten" class="form-label">
-                            Konten Berita <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="konten" 
-                                  name="konten" 
-                                  rows="12" 
-                                  class="form-input @error('konten') border-red-500 ring-red-500 @enderror"
-                                  placeholder="Tulis isi berita lengkap di sini..."
-                                  required>{{ old('konten') }}</textarea>
-                        @error('konten')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <label for="meta_title" class="form-label">Meta Title</label>
+                        <input type="text" 
+                               id="meta_title" 
+                               name="meta_title" 
+                               value="{{ old('meta_title') }}" 
+                               class="form-input" 
+                               placeholder="Judul untuk mesin pencari (maks 70 karakter)"
+                               maxlength="70">
+                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan judul berita</p>
+                    </div>
+                    
+                    <div>
+                        <label for="meta_description" class="form-label">Meta Description</label>
+                        <textarea id="meta_description" 
+                                  name="meta_description" 
+                                  rows="2" 
+                                  class="form-input"
+                                  placeholder="Deskripsi untuk mesin pencari (maks 160 karakter)"
+                                  maxlength="160">{{ old('meta_description') }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan ringkasan</p>
+                    </div>
+                    
+                    <div>
+                        <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                        <input type="text" 
+                               id="meta_keywords" 
+                               name="meta_keywords" 
+                               value="{{ old('meta_keywords') }}" 
+                               class="form-input" 
+                               placeholder="kata kunci, dipisah, koma">
                     </div>
                 </div>
             </div>
@@ -147,9 +236,6 @@
                                   file:transition-colors file:cursor-pointer
                                   @error('gambar') file:bg-red-100 file:text-red-600 @enderror">
                     <p class="text-xs text-gray-500 mt-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
                         Format: JPG, PNG, WebP. Maks 2MB.
                     </p>
                     @error('gambar')
@@ -174,17 +260,75 @@
                         <label for="status" class="form-label">
                             Status <span class="text-red-500">*</span>
                         </label>
-                        <select id="status" name="status" class="form-input @error('status') border-red-500 @enderror" required>
-                            <option value="draft" {{ old('status', 'draft') == 'draft' ? 'selected' : '' }}>📝 Draft</option>
-                            <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>🌐 Publish Sekarang</option>
+                        <select id="status" name="status" class="form-input @error('status') border-red-500 @enderror" required x-model="status">
+                            <option value="draft">📝 Draft</option>
+                            <option value="published">🌐 Publish</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">
-                            Draft tidak akan ditampilkan di halaman publik
-                        </p>
                         @error('status')
                             <p class="form-error mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Scheduled Publishing --}}
+                    <div x-show="status === 'published'" x-collapse>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" 
+                                   name="is_scheduled" 
+                                   value="1"
+                                   x-model="isScheduled"
+                                   class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                            <span class="text-sm text-gray-700">Jadwalkan publikasi</span>
+                        </label>
+                    </div>
+
+                    {{-- Tanggal Publikasi --}}
+                    <div x-show="status === 'published' && isScheduled" x-collapse>
+                        <label for="tanggal_publikasi" class="form-label">Tanggal Publikasi</label>
+                        <input type="datetime-local" 
+                               id="tanggal_publikasi" 
+                               name="tanggal_publikasi" 
+                               value="{{ old('tanggal_publikasi') }}" 
+                               class="form-input">
+                        <p class="text-xs text-gray-500 mt-1">Berita akan otomatis publish pada waktu yang ditentukan</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Opsi Tambahan --}}
+            <div class="bento-card-flat">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    Opsi Tambahan
+                </h2>
+                
+                <div class="space-y-3">
+                    {{-- Featured --}}
+                    <label class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                        <input type="checkbox" 
+                               name="is_featured" 
+                               value="1"
+                               {{ old('is_featured') ? 'checked' : '' }}
+                               class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">⭐ Featured</span>
+                            <p class="text-xs text-gray-500">Tampilkan di bagian utama/highlight</p>
+                        </div>
+                    </label>
+
+                    {{-- Pinned --}}
+                    <label class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                        <input type="checkbox" 
+                               name="is_pinned" 
+                               value="1"
+                               {{ old('is_pinned') ? 'checked' : '' }}
+                               class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">📌 Pinned</span>
+                            <p class="text-xs text-gray-500">Sematkan di posisi teratas daftar</p>
+                        </div>
+                    </label>
                 </div>
             </div>
             
@@ -198,8 +342,8 @@
                         <p class="font-medium mb-1">Info:</p>
                         <ul class="list-disc list-inside space-y-1 text-blue-700">
                             <li>Nama penulis otomatis tercatat</li>
-                            <li>Tanggal publikasi otomatis saat published</li>
                             <li>Slug URL dibuat otomatis dari judul</li>
+                            <li>Gallery dapat ditambahkan setelah disimpan</li>
                         </ul>
                     </div>
                 </div>
@@ -222,4 +366,15 @@
         </div>
     </div>
 </form>
+
+@push('scripts')
+<script>
+function beritaForm() {
+    return {
+        status: '{{ old('status', 'draft') }}',
+        isScheduled: {{ old('is_scheduled') ? 'true' : 'false' }}
+    }
+}
+</script>
+@endpush
 @endsection
