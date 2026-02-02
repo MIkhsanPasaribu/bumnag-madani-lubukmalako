@@ -2,18 +2,31 @@
 
 namespace App\Models;
 
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 /**
  * Model Pengumuman untuk menyimpan pengumuman BUMNag
+ * 
+ * Fitur:
+ * - View tracking
+ * - Featured/Pinned
+ * - SEO Meta Tags
+ * - Soft Delete (Archive)
  */
 class Pengumuman extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug, SoftDeletes;
 
     protected $table = 'pengumuman';
+
+    /**
+     * Field yang digunakan sebagai source untuk slug
+     */
+    protected string $slugSourceField = 'judul';
 
     /**
      * The attributes that are mass assignable.
@@ -29,6 +42,13 @@ class Pengumuman extends Model
         'tanggal_mulai',
         'tanggal_berakhir',
         'status',
+        // Fitur baru
+        'views',
+        'is_featured',
+        'is_pinned',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
     ];
 
     /**
@@ -41,41 +61,15 @@ class Pengumuman extends Model
         return [
             'tanggal_mulai' => 'date',
             'tanggal_berakhir' => 'date',
+            'views' => 'integer',
+            'is_featured' => 'boolean',
+            'is_pinned' => 'boolean',
         ];
     }
 
-    /**
-     * Boot method untuk auto-generate slug
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($pengumuman) {
-            if (empty($pengumuman->slug)) {
-                $pengumuman->slug = Str::slug($pengumuman->judul);
-            }
-            // Pastikan slug unique
-            $originalSlug = $pengumuman->slug;
-            $count = 1;
-            while (static::where('slug', $pengumuman->slug)->exists()) {
-                $pengumuman->slug = $originalSlug . '-' . $count;
-                $count++;
-            }
-        });
-
-        static::updating(function ($pengumuman) {
-            if ($pengumuman->isDirty('judul') && !$pengumuman->isDirty('slug')) {
-                $pengumuman->slug = Str::slug($pengumuman->judul);
-                $originalSlug = $pengumuman->slug;
-                $count = 1;
-                while (static::where('slug', $pengumuman->slug)->where('id', '!=', $pengumuman->id)->exists()) {
-                    $pengumuman->slug = $originalSlug . '-' . $count;
-                    $count++;
-                }
-            }
-        });
-    }
+    // ==========================================
+    // SCOPES
+    // ==========================================
 
     /**
      * Scope: Pengumuman yang aktif (status aktif dan dalam periode)
@@ -99,11 +93,28 @@ class Pengumuman extends Model
     }
 
     /**
-     * Scope: Urutkan berdasarkan prioritas (tinggi dulu)
+     * Scope: Hanya pengumuman featured
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
+     * Scope: Hanya pengumuman pinned
+     */
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
+    }
+
+    /**
+     * Scope: Urutkan berdasarkan prioritas (pinned dulu, lalu tinggi)
      */
     public function scopeByPrioritas($query)
     {
-        return $query->orderByRaw("FIELD(prioritas, 'tinggi', 'sedang', 'rendah')");
+        return $query->orderByDesc('is_pinned')
+                     ->orderByRaw("FIELD(prioritas, 'tinggi', 'sedang', 'rendah')");
     }
 
     /**
@@ -113,6 +124,30 @@ class Pengumuman extends Model
     {
         return $query->where('prioritas', $prioritas);
     }
+
+    /**
+     * Scope: Pencarian
+     */
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where(function ($q) use ($keyword) {
+            $q->where('judul', 'like', "%{$keyword}%")
+              ->orWhere('konten', 'like', "%{$keyword}%");
+        });
+    }
+
+    /**
+     * Scope: Urutkan terbaru
+     */
+    public function scopeLatest($query)
+    {
+        return $query->orderByDesc('is_pinned')
+                     ->orderByDesc('tanggal_mulai');
+    }
+
+    // ==========================================
+    // ACCESSORS & MUTATORS
+    // ==========================================
 
     /**
      * Mendapatkan URL lampiran
@@ -126,27 +161,19 @@ class Pengumuman extends Model
     }
 
     /**
-     * Cek apakah pengumuman sedang aktif
+     * Mendapatkan meta title dengan fallback
      */
-    public function isAktif(): bool
+    public function getMetaTitleDisplayAttribute(): string
     {
-        if ($this->status !== 'aktif') {
-            return false;
-        }
+        return $this->meta_title ?: $this->judul;
+    }
 
-        $now = now()->startOfDay();
-        $mulai = $this->tanggal_mulai;
-        $berakhir = $this->tanggal_berakhir;
-
-        if ($mulai > $now) {
-            return false;
-        }
-
-        if ($berakhir && $berakhir < $now) {
-            return false;
-        }
-
-        return true;
+    /**
+     * Mendapatkan meta description dengan fallback
+     */
+    public function getMetaDescriptionDisplayAttribute(): string
+    {
+        return $this->meta_description ?: Str::limit(strip_tags($this->konten), 160);
     }
 
     /**
@@ -173,5 +200,57 @@ class Pengumuman extends Model
             'rendah' => 'Prioritas Rendah',
             default => 'Tidak Diketahui',
         };
+    }
+
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+
+    /**
+     * Cek apakah pengumuman sedang aktif
+     */
+    public function isAktif(): bool
+    {
+        if ($this->status !== 'aktif') {
+            return false;
+        }
+
+        $now = now()->startOfDay();
+        $mulai = $this->tanggal_mulai;
+        $berakhir = $this->tanggal_berakhir;
+
+        if ($mulai > $now) {
+            return false;
+        }
+
+        if ($berakhir && $berakhir < $now) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Increment jumlah view
+     */
+    public function incrementViews(): void
+    {
+        $this->increment('views');
+    }
+
+    /**
+     * Toggle status featured
+     */
+    public function toggleFeatured(): void
+    {
+        $this->update(['is_featured' => !$this->is_featured]);
+    }
+
+    /**
+     * Toggle status pinned
+     */
+    public function togglePinned(): void
+    {
+        $this->update(['is_pinned' => !$this->is_pinned]);
     }
 }
