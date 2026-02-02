@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\TransaksiKasController;
 use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\TimPengembangController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +57,9 @@ Route::get('/berita/{slug}', [BeritaController::class, 'show'])->name('berita.sh
 // Pengumuman
 Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
 Route::get('/pengumuman/{slug}', [PengumumanController::class, 'show'])->name('pengumuman.show');
+
+// Tim Pengembang
+Route::get('/tim-pengembang', [TimPengembangController::class, 'index'])->name('tim-pengembang');
 
 // ==========================================================================
 // AUTHENTICATION ROUTES
