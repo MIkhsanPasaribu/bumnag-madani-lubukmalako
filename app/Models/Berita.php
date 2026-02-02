@@ -2,19 +2,35 @@
 
 namespace App\Models;
 
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 /**
  * Model Berita untuk menyimpan berita dan artikel BUMNag
+ * 
+ * Fitur:
+ * - Kategori berita
+ * - Multiple gambar (gallery)
+ * - Featured/Pinned
+ * - SEO Meta Tags
+ * - Scheduled publishing
+ * - Soft Delete (Archive)
  */
 class Berita extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug, SoftDeletes;
 
     protected $table = 'berita';
+
+    /**
+     * Field yang digunakan sebagai source untuk slug
+     */
+    protected string $slugSourceField = 'judul';
 
     /**
      * The attributes that are mass assignable.
@@ -31,6 +47,14 @@ class Berita extends Model
         'status',
         'tanggal_publikasi',
         'views',
+        // Fitur baru
+        'kategori_id',
+        'is_featured',
+        'is_pinned',
+        'is_scheduled',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
     ];
 
     /**
@@ -43,42 +67,15 @@ class Berita extends Model
         return [
             'tanggal_publikasi' => 'datetime',
             'views' => 'integer',
+            'is_featured' => 'boolean',
+            'is_pinned' => 'boolean',
+            'is_scheduled' => 'boolean',
         ];
     }
 
-    /**
-     * Boot method untuk auto-generate slug
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($berita) {
-            if (empty($berita->slug)) {
-                $berita->slug = Str::slug($berita->judul);
-            }
-            // Pastikan slug unique
-            $originalSlug = $berita->slug;
-            $count = 1;
-            while (static::where('slug', $berita->slug)->exists()) {
-                $berita->slug = $originalSlug . '-' . $count;
-                $count++;
-            }
-        });
-
-        static::updating(function ($berita) {
-            if ($berita->isDirty('judul') && !$berita->isDirty('slug')) {
-                $berita->slug = Str::slug($berita->judul);
-                // Pastikan slug unique (exclude current record)
-                $originalSlug = $berita->slug;
-                $count = 1;
-                while (static::where('slug', $berita->slug)->where('id', '!=', $berita->id)->exists()) {
-                    $berita->slug = $originalSlug . '-' . $count;
-                    $count++;
-                }
-            }
-        });
-    }
+    // ==========================================
+    // RELATIONSHIPS
+    // ==========================================
 
     /**
      * Relasi: Berita ditulis oleh User
@@ -89,7 +86,36 @@ class Berita extends Model
     }
 
     /**
+     * Relasi: Berita memiliki satu kategori
+     */
+    public function kategori(): BelongsTo
+    {
+        return $this->belongsTo(KategoriBerita::class, 'kategori_id');
+    }
+
+    /**
+     * Relasi: Berita memiliki banyak gambar (gallery)
+     */
+    public function gambarGallery(): HasMany
+    {
+        return $this->hasMany(GambarBerita::class)->ordered();
+    }
+
+    /**
+     * Mendapatkan gambar cover dari gallery (jika ada)
+     */
+    public function coverFromGallery()
+    {
+        return $this->hasOne(GambarBerita::class)->cover();
+    }
+
+    // ==========================================
+    // SCOPES
+    // ==========================================
+
+    /**
      * Scope: Hanya berita yang sudah dipublish
+     * Mempertimbangkan scheduled publishing
      */
     public function scopePublished($query)
     {
@@ -107,12 +133,63 @@ class Berita extends Model
     }
 
     /**
-     * Scope: Urutkan berdasarkan terbaru
+     * Scope: Berita yang terjadwal (belum publish)
+     */
+    public function scopeScheduled($query)
+    {
+        return $query->where('status', 'published')
+                     ->where('is_scheduled', true)
+                     ->where('tanggal_publikasi', '>', now());
+    }
+
+    /**
+     * Scope: Hanya berita featured
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
+     * Scope: Hanya berita pinned
+     */
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
+    }
+
+    /**
+     * Scope: Urutkan berdasarkan terbaru (pinned dulu)
      */
     public function scopeLatest($query)
     {
-        return $query->orderBy('tanggal_publikasi', 'desc');
+        return $query->orderByDesc('is_pinned')
+                     ->orderByDesc('tanggal_publikasi');
     }
+
+    /**
+     * Scope: Filter berdasarkan kategori
+     */
+    public function scopeByKategori($query, $kategoriId)
+    {
+        return $query->where('kategori_id', $kategoriId);
+    }
+
+    /**
+     * Scope: Pencarian
+     */
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where(function ($q) use ($keyword) {
+            $q->where('judul', 'like', "%{$keyword}%")
+              ->orWhere('konten', 'like', "%{$keyword}%")
+              ->orWhere('ringkasan', 'like', "%{$keyword}%");
+        });
+    }
+
+    // ==========================================
+    // ACCESSORS & MUTATORS
+    // ==========================================
 
     /**
      * Increment jumlah view
@@ -135,7 +212,7 @@ class Berita extends Model
     }
 
     /**
-     * Mendapatkan URL gambar
+     * Mendapatkan URL gambar utama
      */
     public function getGambarUrlAttribute(): ?string
     {
@@ -146,10 +223,92 @@ class Berita extends Model
     }
 
     /**
+     * Mendapatkan meta title dengan fallback
+     */
+    public function getMetaTitleDisplayAttribute(): string
+    {
+        return $this->meta_title ?: $this->judul;
+    }
+
+    /**
+     * Mendapatkan meta description dengan fallback
+     */
+    public function getMetaDescriptionDisplayAttribute(): string
+    {
+        return $this->meta_description ?: Str::limit(strip_tags($this->konten), 160);
+    }
+
+    /**
+     * Mendapatkan status label yang lebih deskriptif
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        if ($this->status === 'draft') {
+            return 'Draft';
+        }
+
+        if ($this->is_scheduled && $this->tanggal_publikasi > now()) {
+            return 'Terjadwal';
+        }
+
+        return 'Published';
+    }
+
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+
+    /**
      * Cek apakah berita sudah dipublish
      */
     public function isPublished(): bool
     {
-        return $this->status === 'published' && $this->tanggal_publikasi && $this->tanggal_publikasi <= now();
+        return $this->status === 'published' 
+            && $this->tanggal_publikasi 
+            && $this->tanggal_publikasi <= now();
+    }
+
+    /**
+     * Cek apakah berita dalam status terjadwal
+     */
+    public function isScheduled(): bool
+    {
+        return $this->status === 'published' 
+            && $this->is_scheduled 
+            && $this->tanggal_publikasi 
+            && $this->tanggal_publikasi > now();
+    }
+
+    /**
+     * Mendapatkan berita terkait berdasarkan kategori
+     */
+    public function getRelatedByKategori(int $limit = 4)
+    {
+        if (!$this->kategori_id) {
+            return collect();
+        }
+
+        return static::published()
+            ->where('id', '!=', $this->id)
+            ->where('kategori_id', $this->kategori_id)
+            ->latest()
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Toggle status featured
+     */
+    public function toggleFeatured(): void
+    {
+        $this->update(['is_featured' => !$this->is_featured]);
+    }
+
+    /**
+     * Toggle status pinned
+     */
+    public function togglePinned(): void
+    {
+        $this->update(['is_pinned' => !$this->is_pinned]);
     }
 }
