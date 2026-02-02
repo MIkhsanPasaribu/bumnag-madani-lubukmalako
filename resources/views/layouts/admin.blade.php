@@ -135,6 +135,9 @@
         [x-cloak] { display: none !important; }
     </style>
     
+    {{-- jQuery (Required for Summernote) --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
     @stack('scripts')
 </body>
 </html>
