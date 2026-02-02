@@ -7,6 +7,7 @@ use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\TransparansiController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\GaleriBumnagController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\BeritaController as AdminBeritaController;
 use App\Http\Controllers\Admin\PengumumanController as AdminPengumumanController;
 use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\TransaksiKasController;
+use App\Http\Controllers\Admin\GaleriBumnagController as AdminGaleriBumnagController;
 use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\TimPengembangController;
@@ -57,6 +59,9 @@ Route::get('/berita/{slug}', [BeritaController::class, 'show'])->name('berita.sh
 // Pengumuman
 Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
 Route::get('/pengumuman/{slug}', [PengumumanController::class, 'show'])->name('pengumuman.show');
+
+// Galeri BUMNag
+Route::get('/galeri-bumnag', [GaleriBumnagController::class, 'index'])->name('galeri-bumnag.index');
 
 // Tim Pengembang
 Route::get('/tim-pengembang', [TimPengembangController::class, 'index'])->name('tim-pengembang');
@@ -130,6 +135,15 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::get('/transaksi-kas/recalculate', [TransaksiKasController::class, 'recalculateSaldo'])->name('transaksi-kas.recalculate');
     Route::get('/transaksi-kas/activity', [TransaksiKasController::class, 'activity'])->name('transaksi-kas.activity');
     Route::resource('transaksi-kas', TransaksiKasController::class);
+    
+    // CRUD Galeri BUMNag
+    Route::post('/galeri-bumnag/update-order', [AdminGaleriBumnagController::class, 'updateOrder'])
+        ->name('galeri-bumnag.update-order');
+    Route::post('/galeri-bumnag/{galeri_bumnag}/toggle-status', [AdminGaleriBumnagController::class, 'toggleStatus'])
+        ->name('galeri-bumnag.toggle-status');
+    Route::resource('galeri-bumnag', AdminGaleriBumnagController::class)->parameters([
+        'galeri-bumnag' => 'galeri_bumnag'
+    ]);
     
     // Password Management
     Route::get('/ganti-password', [PasswordController::class, 'edit'])->name('password.edit');
