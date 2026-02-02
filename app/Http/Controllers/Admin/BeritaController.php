@@ -3,46 +3,90 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BeritaRequest;
 use App\Models\Berita;
+use App\Models\GambarBerita;
+use App\Models\KategoriBerita;
+use App\Traits\HasFileUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controller untuk mengelola berita di admin
+ * Termasuk fitur: Kategori, Gallery, Featured/Pinned, SEO, Scheduling, Archive
  */
 class BeritaController extends Controller
 {
+    use HasFileUpload;
+
+    /**
+     * Folder untuk menyimpan gambar berita
+     */
+    private const UPLOAD_FOLDER = 'berita';
+    private const GALLERY_FOLDER = 'berita/gallery';
+
     /**
      * Menampilkan daftar berita
      */
     public function index(Request $request)
     {
-        $query = Berita::with('penulis')->latest();
+        $query = Berita::with(['penulis', 'kategori']);
         
         // Filter berdasarkan status
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            if ($request->status === 'scheduled') {
+                $query->scheduled();
+            } else {
+                $query->where('status', $request->status);
+            }
+        }
+
+        // Filter berdasarkan kategori
+        if ($request->filled('kategori')) {
+            $query->where('kategori_id', $request->kategori);
+        }
+
+        // Filter featured
+        if ($request->filled('featured')) {
+            $query->where('is_featured', $request->featured === '1');
+        }
+
+        // Filter pinned
+        if ($request->filled('pinned')) {
+            $query->where('is_pinned', $request->pinned === '1');
+        }
+
+        // Filter archived (soft deleted)
+        if ($request->filled('archived') && $request->archived === '1') {
+            $query->onlyTrashed();
         }
         
         // Search
-        if ($request->has('cari') && $request->cari) {
-            $query->where('judul', 'like', '%' . $request->cari . '%');
+        if ($request->filled('cari')) {
+            $query->search($request->cari);
         }
         
-        $berita = $query->paginate(10)->withQueryString();
+        $berita = $query->latest()->paginate(10)->withQueryString();
         
         // Statistik untuk cards
-        $totalPublished = Berita::where('status', 'published')->count();
-        $totalDraft = Berita::where('status', 'draft')->count();
+        $totalPublished = Berita::published()->count();
+        $totalDraft = Berita::draft()->count();
+        $totalScheduled = Berita::scheduled()->count();
         $totalViews = Berita::sum('views');
+        $totalArchived = Berita::onlyTrashed()->count();
+        
+        // Data untuk filter
+        $kategoris = KategoriBerita::active()->ordered()->get();
         
         return view('admin.berita.index', compact(
             'berita',
             'totalPublished',
             'totalDraft',
-            'totalViews'
+            'totalScheduled',
+            'totalViews',
+            'totalArchived',
+            'kategoris'
         ));
     }
     
@@ -51,105 +95,245 @@ class BeritaController extends Controller
      */
     public function create()
     {
-        return view('admin.berita.create');
+        $kategoris = KategoriBerita::active()->ordered()->get();
+        
+        return view('admin.berita.create', compact('kategoris'));
     }
     
     /**
      * Menyimpan berita baru
      */
-    public function store(Request $request)
+    public function store(BeritaRequest $request)
     {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'ringkasan' => 'nullable|string|max:500',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'status' => 'required|in:draft,published',
-        ], [
-            'judul.required' => 'Judul berita wajib diisi.',
-            'konten.required' => 'Konten berita wajib diisi.',
-            'gambar.image' => 'File harus berupa gambar.',
-            'gambar.max' => 'Ukuran gambar maksimal 2MB.',
-        ]);
+        $validated = $request->validated();
         
-        // Handle upload gambar
-        if ($request->hasFile('gambar')) {
-            $file = $request->file('gambar');
-            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $filename);
-            $validated['gambar'] = $filename;
+        DB::beginTransaction();
+        
+        try {
+            // Handle upload gambar utama
+            if ($request->hasFile('gambar')) {
+                $validated['gambar'] = $this->uploadFile(
+                    $request->file('gambar'),
+                    self::UPLOAD_FOLDER,
+                    $validated['judul']
+                );
+            }
+            
+            // Set penulis
+            $validated['penulis_id'] = Auth::id();
+            
+            // Handle tanggal publikasi dan scheduling
+            if ($validated['status'] === 'published') {
+                if ($request->filled('tanggal_publikasi') && $request->is_scheduled) {
+                    // Scheduled publishing
+                    $validated['is_scheduled'] = true;
+                } else {
+                    // Immediate publish
+                    $validated['tanggal_publikasi'] = now();
+                    $validated['is_scheduled'] = false;
+                }
+            }
+            
+            $berita = Berita::create($validated);
+            
+            // Handle gallery images
+            if ($request->hasFile('gallery')) {
+                $this->storeGalleryImages($berita, $request->file('gallery'));
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('admin.berita.index')
+                ->with('success', 'Berita berhasil ditambahkan.');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan berita: ' . $e->getMessage());
         }
-        
-        // Set penulis dan tanggal publikasi
-        $validated['penulis_id'] = Auth::id();
-        if ($validated['status'] === 'published') {
-            $validated['tanggal_publikasi'] = now();
-        }
-        
-        Berita::create($validated);
-        
-        return redirect()->route('admin.berita.index')
-            ->with('success', 'Berita berhasil ditambahkan.');
     }
     
     /**
      * Menampilkan form edit berita
      */
-    public function edit(Berita $beritum)
+    public function edit(Berita $berita)
     {
-        return view('admin.berita.edit', ['berita' => $beritum]);
+        $kategoris = KategoriBerita::active()->ordered()->get();
+        $berita->load('gambarGallery');
+        
+        return view('admin.berita.edit', compact('berita', 'kategoris'));
     }
     
     /**
      * Menyimpan perubahan berita
      */
-    public function update(Request $request, Berita $beritum)
+    public function update(BeritaRequest $request, Berita $berita)
     {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'ringkasan' => 'nullable|string|max:500',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'status' => 'required|in:draft,published',
-        ]);
+        $validated = $request->validated();
         
-        // Handle upload gambar baru
-        if ($request->hasFile('gambar')) {
-            // Hapus gambar lama
-            if ($beritum->gambar && file_exists(public_path('uploads/berita/' . $beritum->gambar))) {
-                unlink(public_path('uploads/berita/' . $beritum->gambar));
+        DB::beginTransaction();
+        
+        try {
+            // Handle upload gambar baru dengan auto-delete gambar lama
+            if ($request->hasFile('gambar')) {
+                $validated['gambar'] = $this->handleFileUpload(
+                    $request->file('gambar'),
+                    $berita->gambar,
+                    self::UPLOAD_FOLDER,
+                    $validated['judul']
+                );
             }
             
-            $file = $request->file('gambar');
-            $filename = time() . '_' . Str::slug($validated['judul']) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $filename);
-            $validated['gambar'] = $filename;
+            // Handle tanggal publikasi
+            if ($validated['status'] === 'published') {
+                if ($request->filled('tanggal_publikasi') && $request->is_scheduled) {
+                    $validated['is_scheduled'] = true;
+                } elseif ($berita->status !== 'published') {
+                    // Baru dipublish
+                    $validated['tanggal_publikasi'] = now();
+                    $validated['is_scheduled'] = false;
+                }
+            }
+            
+            $berita->update($validated);
+            
+            // Handle gallery images
+            if ($request->hasFile('gallery')) {
+                $this->storeGalleryImages($berita, $request->file('gallery'));
+            }
+            
+            // Handle deleted gallery images (dari form edit)
+            if ($request->filled('deleted_gallery_ids')) {
+                $this->deleteGalleryImages($request->deleted_gallery_ids);
+            }
+            
+            // Handle deleted gallery images (format alternatif)
+            if ($request->filled('delete_gallery')) {
+                $this->deleteGalleryImages($request->delete_gallery);
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('admin.berita.index')
+                ->with('success', 'Berita berhasil diperbarui.');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui berita: ' . $e->getMessage());
         }
-        
-        // Set tanggal publikasi jika baru dipublish
-        if ($validated['status'] === 'published' && $beritum->status !== 'published') {
-            $validated['tanggal_publikasi'] = now();
-        }
-        
-        $beritum->update($validated);
-        
-        return redirect()->route('admin.berita.index')
-            ->with('success', 'Berita berhasil diperbarui.');
     }
     
     /**
-     * Menghapus berita
+     * Menghapus berita (soft delete / archive)
      */
-    public function destroy(Berita $beritum)
+    public function destroy(Berita $berita)
     {
-        // Hapus gambar
-        if ($beritum->gambar && file_exists(public_path('uploads/berita/' . $beritum->gambar))) {
-            unlink(public_path('uploads/berita/' . $beritum->gambar));
-        }
-        
-        $beritum->delete();
+        $berita->delete(); // Soft delete
         
         return redirect()->route('admin.berita.index')
-            ->with('success', 'Berita berhasil dihapus.');
+            ->with('success', 'Berita berhasil diarsipkan.');
+    }
+
+    /**
+     * Menghapus berita secara permanen
+     */
+    public function forceDestroy($id)
+    {
+        $berita = Berita::onlyTrashed()->findOrFail($id);
+        
+        // Hapus gambar utama
+        $this->deleteFile($berita->gambar, self::UPLOAD_FOLDER);
+        
+        // Hapus gallery images
+        foreach ($berita->gambarGallery as $gambar) {
+            $this->deleteFile($gambar->file_name, self::GALLERY_FOLDER);
+        }
+        
+        $berita->forceDelete();
+        
+        return redirect()->route('admin.berita.index')
+            ->with('success', 'Berita berhasil dihapus permanen.');
+    }
+
+    /**
+     * Restore berita yang diarsipkan
+     */
+    public function restore($id)
+    {
+        $berita = Berita::onlyTrashed()->findOrFail($id);
+        $berita->restore();
+        
+        return redirect()->route('admin.berita.index')
+            ->with('success', 'Berita berhasil dipulihkan dari arsip.');
+    }
+
+    /**
+     * Toggle status featured
+     */
+    public function toggleFeatured(Berita $berita)
+    {
+        $berita->toggleFeatured();
+        
+        $status = $berita->is_featured ? 'ditambahkan ke' : 'dihapus dari';
+        
+        return redirect()->back()
+            ->with('success', "Berita berhasil {$status} featured.");
+    }
+
+    /**
+     * Toggle status pinned
+     */
+    public function togglePinned(Berita $berita)
+    {
+        $berita->togglePinned();
+        
+        $status = $berita->is_pinned ? 'di-pin' : 'di-unpin';
+        
+        return redirect()->back()
+            ->with('success', "Berita berhasil {$status}.");
+    }
+
+    /**
+     * Menyimpan gambar gallery
+     */
+    private function storeGalleryImages(Berita $berita, array $files): void
+    {
+        $urutan = $berita->gambarGallery()->max('urutan') ?? 0;
+        
+        foreach ($files as $file) {
+            $urutan++;
+            
+            $fileName = $this->uploadFile(
+                $file,
+                self::GALLERY_FOLDER,
+                $berita->judul . '-gallery-' . $urutan
+            );
+            
+            $berita->gambarGallery()->create([
+                'file_name' => $fileName,
+                'original_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'urutan' => $urutan,
+            ]);
+        }
+    }
+
+    /**
+     * Menghapus gambar gallery berdasarkan ID
+     */
+    private function deleteGalleryImages(array $ids): void
+    {
+        $gambars = GambarBerita::whereIn('id', $ids)->get();
+        
+        foreach ($gambars as $gambar) {
+            $this->deleteFile($gambar->file_name, self::GALLERY_FOLDER);
+            $gambar->delete();
+        }
     }
 }
