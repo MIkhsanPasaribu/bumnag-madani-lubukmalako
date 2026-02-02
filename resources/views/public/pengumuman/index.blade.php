@@ -58,19 +58,7 @@
                 <article class="bento-card flex flex-col md:flex-row gap-4 group">
                     {{-- Priority Badge --}}
                     <div class="flex-shrink-0">
-                        @if($item->prioritas === 'tinggi')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                {{ ucfirst($item->prioritas) }}
-                            </span>
-                        @elseif($item->prioritas === 'sedang')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-                                {{ ucfirst($item->prioritas) }}
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                {{ ucfirst($item->prioritas) }}
-                            </span>
-                        @endif
+                        <x-prioritas-badge :prioritas="$item->prioritas" />
                     </div>
                     
                     {{-- Content --}}
