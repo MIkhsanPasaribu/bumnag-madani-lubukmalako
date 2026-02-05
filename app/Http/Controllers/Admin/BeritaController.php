@@ -308,6 +308,11 @@ class BeritaController extends Controller
         foreach ($files as $file) {
             $urutan++;
             
+            // Ambil info file SEBELUM move (karena move() menghapus file temp)
+            $originalName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $mimeType = $file->getMimeType();
+            
             $fileName = $this->uploadFile(
                 $file,
                 self::GALLERY_FOLDER,
@@ -316,9 +321,9 @@ class BeritaController extends Controller
             
             $berita->gambarGallery()->create([
                 'file_name' => $fileName,
-                'original_name' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
+                'original_name' => $originalName,
+                'file_size' => $fileSize,
+                'mime_type' => $mimeType,
                 'urutan' => $urutan,
             ]);
         }
