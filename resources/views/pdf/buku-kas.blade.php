@@ -211,7 +211,7 @@
                 </td>
                 <td class="text-cell">
                     <h1>BUKU KAS HARIAN</h1>
-                    <h2>Plasma Lubuk Malako - BUMNag Madani</h2>
+                    <h2>Unit Perkebunan Lubuk Malako - BUMNag Madani</h2>
                     <div class="periode">Periode: {{ $periode ?? ($rekap['nama_bulan'] ?? '') . ' ' . ($tahun ?? '') }}</div>
                 </td>
                 <td class="spacer-cell"></td>
