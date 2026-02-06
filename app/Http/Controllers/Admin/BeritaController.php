@@ -25,6 +25,7 @@ class BeritaController extends Controller
      */
     private const UPLOAD_FOLDER = 'berita';
     private const GALLERY_FOLDER = 'berita/gallery';
+    private const LAMPIRAN_FOLDER = 'berita/lampiran';
 
     /**
      * Menampilkan daftar berita
@@ -119,6 +120,18 @@ class BeritaController extends Controller
                 );
             }
             
+            // Handle upload lampiran
+            if ($request->hasFile('lampiran')) {
+                $lampiranFile = $request->file('lampiran');
+                $validated['lampiran'] = $this->uploadFile(
+                    $lampiranFile,
+                    self::LAMPIRAN_FOLDER,
+                    $validated['judul'] . '-lampiran'
+                );
+                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
+                $validated['lampiran_size'] = $lampiranFile->getSize();
+            }
+            
             // Set penulis
             $validated['penulis_id'] = Auth::id();
             
@@ -186,6 +199,27 @@ class BeritaController extends Controller
                 );
             }
             
+            // Handle upload lampiran baru dengan auto-delete lampiran lama
+            if ($request->hasFile('lampiran')) {
+                $lampiranFile = $request->file('lampiran');
+                $validated['lampiran'] = $this->handleFileUpload(
+                    $lampiranFile,
+                    $berita->lampiran,
+                    self::LAMPIRAN_FOLDER,
+                    $validated['judul'] . '-lampiran'
+                );
+                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
+                $validated['lampiran_size'] = $lampiranFile->getSize();
+            }
+            
+            // Handle hapus lampiran (jika checkbox hapus dicentang)
+            if ($request->boolean('hapus_lampiran') && $berita->lampiran) {
+                $this->deleteFile($berita->lampiran, self::LAMPIRAN_FOLDER);
+                $validated['lampiran'] = null;
+                $validated['lampiran_original_name'] = null;
+                $validated['lampiran_size'] = 0;
+            }
+            
             // Handle tanggal publikasi
             if ($validated['status'] === 'published') {
                 if ($request->filled('tanggal_publikasi') && $request->is_scheduled) {
@@ -248,6 +282,11 @@ class BeritaController extends Controller
         
         // Hapus gambar utama
         $this->deleteFile($berita->gambar, self::UPLOAD_FOLDER);
+        
+        // Hapus lampiran
+        if ($berita->lampiran) {
+            $this->deleteFile($berita->lampiran, self::LAMPIRAN_FOLDER);
+        }
         
         // Hapus gallery images
         foreach ($berita->gambarGallery as $gambar) {
