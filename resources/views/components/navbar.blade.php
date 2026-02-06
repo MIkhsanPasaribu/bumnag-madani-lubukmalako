@@ -38,6 +38,10 @@
                    class="nav-link {{ request()->routeIs('laporan-tahunan.*') ? 'active' : '' }}">
                     Laporan Tahunan
                 </a>
+                <a href="{{ route('hubungi-kami') }}" 
+                   class="nav-link {{ request()->routeIs('hubungi-kami') ? 'active' : '' }}">
+                    Hubungi Kami
+                </a>
             </nav>
             
             {{-- Login Button (Desktop) --}}
@@ -107,6 +111,10 @@
             <a href="{{ route('laporan-tahunan.index') }}" 
                class="block px-4 py-3 rounded-lg {{ request()->routeIs('laporan-tahunan.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}">
                 Laporan Tahunan
+            </a>
+            <a href="{{ route('hubungi-kami') }}" 
+               class="block px-4 py-3 rounded-lg {{ request()->routeIs('hubungi-kami') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}">
+                Hubungi Kami
             </a>
             
             <div class="pt-4 border-t border-gray-100">
