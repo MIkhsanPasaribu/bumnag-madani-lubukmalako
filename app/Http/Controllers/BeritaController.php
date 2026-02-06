@@ -31,8 +31,8 @@ class BeritaController extends Controller
             $query->search($request->cari);
         }
         
-        // Urutkan dengan pinned di atas
-        $berita = $query->latest()->paginate(9)->withQueryString();
+        // Urutkan berdasarkan tanggal publikasi terbaru
+        $berita = $query->orderBy('tanggal_publikasi', 'desc')->paginate(9)->withQueryString();
         
         // Ambil berita featured untuk highlight
         $beritaFeatured = Berita::with('kategori')
@@ -72,7 +72,7 @@ class BeritaController extends Controller
         $berita = Berita::with('kategori')
             ->published()
             ->byKategori($kategori->id)
-            ->latest()
+            ->orderBy('tanggal_publikasi', 'desc')
             ->paginate(9);
         
         // Ambil semua kategori untuk sidebar
