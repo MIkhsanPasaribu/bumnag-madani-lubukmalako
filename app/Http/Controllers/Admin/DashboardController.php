@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
-use App\Models\Pengumuman;
+use App\Models\LaporanTahunan;
 use App\Models\TransaksiKas;
 use Illuminate\Http\Request;
 
@@ -21,15 +21,15 @@ class DashboardController extends Controller
         // Statistik total
         $totalBerita = Berita::count();
         $totalBeritaPublished = Berita::published()->count();
-        $totalPengumuman = Pengumuman::count();
-        $totalPengumumanAktif = Pengumuman::aktif()->count();
+        $totalLaporanTahunan = LaporanTahunan::count();
+        $totalLaporanPublished = LaporanTahunan::published()->count();
         $totalTransaksi = TransaksiKas::count();
         
         // Berita terbaru (5)
         $beritaTerbaru = Berita::latest()->take(5)->get();
         
-        // Pengumuman terbaru (5)
-        $pengumumanTerbaru = Pengumuman::latest()->take(5)->get();
+        // Laporan Tahunan terbaru (5)
+        $laporanTerbaru = LaporanTahunan::latest()->take(5)->get();
         
         // Statistik keuangan tahun ini dari TransaksiKas
         $tahunIni = date('Y');
@@ -52,11 +52,11 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalBerita',
             'totalBeritaPublished',
-            'totalPengumuman',
-            'totalPengumumanAktif',
+            'totalLaporanTahunan',
+            'totalLaporanPublished',
             'totalTransaksi',
             'beritaTerbaru',
-            'pengumumanTerbaru',
+            'laporanTerbaru',
             'statistikKeuangan',
             'chartData',
             'tahunIni'
