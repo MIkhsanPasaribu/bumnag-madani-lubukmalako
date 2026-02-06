@@ -6,14 +6,14 @@ use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\TransparansiController;
 use App\Http\Controllers\BeritaController;
-use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\LaporanTahunanController;
 use App\Http\Controllers\GaleriBumnagController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProfilController as AdminProfilController;
 use App\Http\Controllers\Admin\BeritaController as AdminBeritaController;
-use App\Http\Controllers\Admin\PengumumanController as AdminPengumumanController;
+use App\Http\Controllers\Admin\LaporanTahunanController as AdminLaporanTahunanController;
 use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\TransaksiKasController;
 use App\Http\Controllers\Admin\GaleriBumnagController as AdminGaleriBumnagController;
@@ -56,9 +56,10 @@ Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
 Route::get('/berita/kategori/{slug}', [BeritaController::class, 'byKategori'])->name('berita.kategori');
 Route::get('/berita/{slug}', [BeritaController::class, 'show'])->name('berita.show');
 
-// Pengumuman
-Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
-Route::get('/pengumuman/{slug}', [PengumumanController::class, 'show'])->name('pengumuman.show');
+// Laporan Tahunan
+Route::get('/laporan-tahunan', [LaporanTahunanController::class, 'index'])->name('laporan-tahunan.index');
+Route::get('/laporan-tahunan/{slug}', [LaporanTahunanController::class, 'show'])->name('laporan-tahunan.show');
+Route::get('/laporan-tahunan/{slug}/download', [LaporanTahunanController::class, 'download'])->name('laporan-tahunan.download');
 
 // Galeri BUMNag
 Route::get('/galeri-bumnag', [GaleriBumnagController::class, 'index'])->name('galeri-bumnag.index');
@@ -118,16 +119,14 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
         'berita' => 'berita'
     ]);
     
-    // CRUD Pengumuman
-    Route::post('/pengumuman/{pengumuman}/toggle-featured', [AdminPengumumanController::class, 'toggleFeatured'])
-        ->name('pengumuman.toggle-featured');
-    Route::post('/pengumuman/{pengumuman}/toggle-pinned', [AdminPengumumanController::class, 'togglePinned'])
-        ->name('pengumuman.toggle-pinned');
-    Route::post('/pengumuman/{id}/restore', [AdminPengumumanController::class, 'restore'])
-        ->name('pengumuman.restore');
-    Route::delete('/pengumuman/{id}/force-delete', [AdminPengumumanController::class, 'forceDestroy'])
-        ->name('pengumuman.force-delete');
-    Route::resource('pengumuman', AdminPengumumanController::class);
+    // CRUD Laporan Tahunan
+    Route::post('/laporan-tahunan/{id}/restore', [AdminLaporanTahunanController::class, 'restore'])
+        ->name('laporan-tahunan.restore');
+    Route::delete('/laporan-tahunan/{id}/force-delete', [AdminLaporanTahunanController::class, 'forceDestroy'])
+        ->name('laporan-tahunan.force-delete');
+    Route::resource('laporan-tahunan', AdminLaporanTahunanController::class)->parameters([
+        'laporan-tahunan' => 'laporan_tahunan'
+    ]);
     
     // CRUD Transaksi Kas (Buku Kas Harian)
     Route::get('/transaksi-kas/export-pdf', [TransaksiKasController::class, 'exportPdf'])->name('transaksi-kas.export-pdf');
