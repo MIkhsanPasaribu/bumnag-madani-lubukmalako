@@ -118,6 +118,20 @@
                         @enderror
                     </div>
                     
+                    {{-- Tanggal Kegiatan --}}
+                    <div>
+                        <label for="tanggal_kegiatan" class="form-label">Tanggal Kegiatan/Peristiwa</label>
+                        <input type="date" 
+                               id="tanggal_kegiatan" 
+                               name="tanggal_kegiatan" 
+                               value="{{ old('tanggal_kegiatan', $berita->tanggal_kegiatan?->format('Y-m-d')) }}" 
+                               class="form-input @error('tanggal_kegiatan') border-red-500 ring-red-500 @enderror">
+                        <p class="text-xs text-gray-500 mt-1">Tanggal saat kegiatan/peristiwa terjadi (bisa tanggal lampau)</p>
+                        @error('tanggal_kegiatan')
+                            <p class="form-error mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
                     {{-- Ringkasan --}}
                     <div>
                         <label for="ringkasan" class="form-label">Ringkasan</label>
@@ -238,6 +252,131 @@
                             Tambah Foto ke Galeri
                         </label>
                         <p class="text-xs text-gray-500 mt-2">Format: JPG, PNG, WebP. Maks 2MB per foto.</p>
+                    </div>
+                </div>
+            </div>
+            
+            {{-- Lampiran Section --}}
+            <div class="bento-card-flat">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    Lampiran File
+                    <span class="text-xs font-normal text-gray-500">(Opsional)</span>
+                </h2>
+                
+                {{-- Current Lampiran --}}
+                @if($berita->lampiran)
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Lampiran Saat Ini</p>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <div class="min-w-0">
+                                    <p class="font-medium text-gray-900 truncate">{{ $berita->lampiran_original_name }}</p>
+                                    <p class="text-sm text-gray-500">{{ $berita->lampiran_size_formatted }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ $berita->lampiran_url }}" 
+                                   target="_blank" 
+                                   class="btn-ghost text-sm flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download
+                                </a>
+                                <label class="flex items-center gap-2 text-sm text-red-600 cursor-pointer">
+                                    <input type="checkbox" name="hapus_lampiran" value="1" class="rounded text-red-600">
+                                    <span>Hapus</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                
+                {{-- Upload New Lampiran --}}
+                <div x-data="{ lampiranName: null, lampiranSize: null }">
+                    <p class="text-sm text-gray-600 mb-2">
+                        {{ $berita->lampiran ? 'Upload file baru untuk mengganti lampiran:' : 'Tambahkan lampiran:' }}
+                    </p>
+                    
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-primary transition-colors @error('lampiran') border-red-500 @enderror">
+                        <input type="file" 
+                               id="lampiran" 
+                               name="lampiran" 
+                               accept=".pdf,.doc,.docx,.xls,.xlsx"
+                               class="hidden"
+                               @change="lampiranName = $event.target.files[0]?.name; lampiranSize = ($event.target.files[0]?.size / 1024 / 1024).toFixed(2)">
+                        
+                        <label for="lampiran" class="cursor-pointer">
+                            <div x-show="!lampiranName">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                <p class="text-gray-600 font-medium">Klik untuk upload lampiran</p>
+                                <p class="text-sm text-gray-400 mt-1">PDF, DOC, DOCX, XLS, XLSX (maks 10MB)</p>
+                            </div>
+                            
+                            <div x-show="lampiranName" x-cloak class="text-left">
+                                <div class="flex items-center gap-3 p-3 bg-primary/10 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-medium text-gray-900 truncate" x-text="lampiranName"></p>
+                                        <p class="text-sm text-gray-500"><span x-text="lampiranSize"></span> MB</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-primary mt-2 text-center">Klik untuk mengganti file</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    @error('lampiran')
+                        <p class="form-error mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+            
+            {{-- Link Eksternal --}}
+            <div class="bento-card-flat">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Link Eksternal (Opsional)
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="link_url" class="form-label">URL Link</label>
+                        <input type="url" 
+                               id="link_url" 
+                               name="link_url" 
+                               value="{{ old('link_url', $berita->link_url) }}" 
+                               class="form-input @error('link_url') border-red-500 ring-red-500 @enderror"
+                               placeholder="https://contoh.com/sumber">
+                        @error('link_url')
+                            <p class="form-error mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="link_text" class="form-label">Teks Link</label>
+                        <input type="text" 
+                               id="link_text" 
+                               name="link_text" 
+                               value="{{ old('link_text', $berita->link_text) }}" 
+                               class="form-input @error('link_text') border-red-500 ring-red-500 @enderror"
+                               placeholder="Kunjungi sumber berita">
+                        <p class="text-xs text-gray-500 mt-1">Teks yang ditampilkan sebagai link. Kosongkan untuk menggunakan URL.</p>
+                        @error('link_text')
+                            <p class="form-error mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             </div>
