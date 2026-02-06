@@ -39,7 +39,7 @@
                     <li><a href="{{ route('statistik') }}" class="text-gray-400 hover:text-primary transition-colors">Statistik Keuangan</a></li>
                     <li><a href="{{ route('transparansi') }}" class="text-gray-400 hover:text-primary transition-colors">Transparansi</a></li>
                     <li><a href="{{ route('berita.index') }}" class="text-gray-400 hover:text-primary transition-colors">Berita</a></li>
-                    <li><a href="{{ route('pengumuman.index') }}" class="text-gray-400 hover:text-primary transition-colors">Pengumuman</a></li>
+                    <li><a href="{{ route('laporan-tahunan.index') }}" class="text-gray-400 hover:text-primary transition-colors">Laporan Tahunan</a></li>
                 </ul>
             </div>
             
