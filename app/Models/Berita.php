@@ -43,9 +43,15 @@ class Berita extends Model
         'konten',
         'ringkasan',
         'gambar',
+        'lampiran',
+        'lampiran_original_name',
+        'lampiran_size',
+        'link_url',
+        'link_text',
         'penulis_id',
         'status',
         'tanggal_publikasi',
+        'tanggal_kegiatan',
         'views',
         // Fitur baru
         'kategori_id',
@@ -66,6 +72,7 @@ class Berita extends Model
     {
         return [
             'tanggal_publikasi' => 'datetime',
+            'tanggal_kegiatan' => 'date',
             'views' => 'integer',
             'is_featured' => 'boolean',
             'is_pinned' => 'boolean',
@@ -223,6 +230,61 @@ class Berita extends Model
     }
 
     /**
+     * Mendapatkan URL lampiran
+     */
+    public function getLampiranUrlAttribute(): ?string
+    {
+        if (!$this->lampiran) {
+            return null;
+        }
+        return asset('uploads/berita/lampiran/' . $this->lampiran);
+    }
+
+    /**
+     * Mendapatkan ukuran lampiran yang readable
+     */
+    public function getLampiranSizeFormattedAttribute(): string
+    {
+        $bytes = $this->lampiran_size ?? 0;
+        
+        if ($bytes >= 1073741824) {
+            return number_format($bytes / 1073741824, 2) . ' GB';
+        }
+        if ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 2) . ' MB';
+        }
+        if ($bytes >= 1024) {
+            return number_format($bytes / 1024, 2) . ' KB';
+        }
+        
+        return $bytes . ' bytes';
+    }
+
+    /**
+     * Cek apakah berita memiliki lampiran
+     */
+    public function hasLampiran(): bool
+    {
+        return !empty($this->lampiran);
+    }
+
+    /**
+     * Cek apakah berita memiliki link eksternal
+     */
+    public function hasLink(): bool
+    {
+        return !empty($this->link_url);
+    }
+
+    /**
+     * Mendapatkan text link dengan fallback ke URL
+     */
+    public function getLinkDisplayTextAttribute(): string
+    {
+        return $this->link_text ?: $this->link_url;
+    }
+
+    /**
      * Mendapatkan meta title dengan fallback
      */
     public function getMetaTitleDisplayAttribute(): string
@@ -291,7 +353,7 @@ class Berita extends Model
         return static::published()
             ->where('id', '!=', $this->id)
             ->where('kategori_id', $this->kategori_id)
-            ->latest()
+            ->orderBy('tanggal_publikasi', 'desc')
             ->limit($limit)
             ->get();
     }
