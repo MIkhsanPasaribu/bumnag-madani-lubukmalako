@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             ProfilBumnagSeeder::class,
             KategoriBeritaSeeder::class,  // Kategori berita dulu sebelum berita
             BeritaSeeder::class,
-            PengumumanSeeder::class,
+            LaporanTahunanSeeder::class,
             KategoriTransaksiSeeder::class,  // Kategori dulu sebelum transaksi
             TransaksiKasSeeder::class,
         ]);
