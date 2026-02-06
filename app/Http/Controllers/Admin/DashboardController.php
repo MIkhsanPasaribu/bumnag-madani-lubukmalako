@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
 use App\Models\LaporanTahunan;
+use App\Models\PesanKontak;
 use App\Models\TransaksiKas;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,7 @@ class DashboardController extends Controller
         $totalLaporanTahunan = LaporanTahunan::count();
         $totalLaporanPublished = LaporanTahunan::published()->count();
         $totalTransaksi = TransaksiKas::count();
+        $totalPesanBelumDibaca = PesanKontak::belumDibaca()->count();
         
         // Berita terbaru (5)
         $beritaTerbaru = Berita::latest()->take(5)->get();
@@ -55,6 +57,7 @@ class DashboardController extends Controller
             'totalLaporanTahunan',
             'totalLaporanPublished',
             'totalTransaksi',
+            'totalPesanBelumDibaca',
             'beritaTerbaru',
             'laporanTerbaru',
             'statistikKeuangan',
