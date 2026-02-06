@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             LaporanTahunanSeeder::class,
             KategoriTransaksiSeeder::class,  // Kategori dulu sebelum transaksi
             TransaksiKasSeeder::class,
+            KontakInfoSeeder::class,
         ]);
     }
 }
