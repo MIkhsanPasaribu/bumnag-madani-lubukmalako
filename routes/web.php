@@ -18,8 +18,11 @@ use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\TransaksiKasController;
 use App\Http\Controllers\Admin\GaleriBumnagController as AdminGaleriBumnagController;
 use App\Http\Controllers\Admin\PasswordController;
+use App\Http\Controllers\Admin\KontakInfoController;
+use App\Http\Controllers\Admin\PesanKontakController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\TimPengembangController;
+use App\Http\Controllers\HubungiKamiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +66,10 @@ Route::get('/laporan-tahunan/{slug}/download', [LaporanTahunanController::class,
 
 // Galeri BUMNag
 Route::get('/galeri-bumnag', [GaleriBumnagController::class, 'index'])->name('galeri-bumnag.index');
+
+// Hubungi Kami
+Route::get('/hubungi-kami', [HubungiKamiController::class, 'index'])->name('hubungi-kami');
+Route::post('/hubungi-kami', [HubungiKamiController::class, 'store'])->name('hubungi-kami.store');
 
 // Tim Pengembang
 Route::get('/tim-pengembang', [TimPengembangController::class, 'index'])->name('tim-pengembang');
@@ -143,6 +150,17 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::resource('galeri-bumnag', AdminGaleriBumnagController::class)->parameters([
         'galeri-bumnag' => 'galeri_bumnag'
     ]);
+    
+    // Informasi Kontak (Edit Only)
+    Route::get('/kontak-info', [KontakInfoController::class, 'edit'])->name('kontak-info.edit');
+    Route::put('/kontak-info', [KontakInfoController::class, 'update'])->name('kontak-info.update');
+    
+    // Pesan Kontak (dari form Hubungi Kami)
+    Route::get('/pesan-kontak', [PesanKontakController::class, 'index'])->name('pesan-kontak.index');
+    Route::get('/pesan-kontak/{pesan_kontak}', [PesanKontakController::class, 'show'])->name('pesan-kontak.show');
+    Route::delete('/pesan-kontak/{pesan_kontak}', [PesanKontakController::class, 'destroy'])->name('pesan-kontak.destroy');
+    Route::post('/pesan-kontak/{pesan_kontak}/tandai-dibaca', [PesanKontakController::class, 'tandaiDibaca'])->name('pesan-kontak.tandai-dibaca');
+    Route::post('/pesan-kontak/tandai-semua-dibaca', [PesanKontakController::class, 'tandaiSemuaDibaca'])->name('pesan-kontak.tandai-semua-dibaca');
     
     // Password Management
     Route::get('/ganti-password', [PasswordController::class, 'edit'])->name('password.edit');
