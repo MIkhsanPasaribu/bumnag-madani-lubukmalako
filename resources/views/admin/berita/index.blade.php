@@ -111,7 +111,7 @@
                         <option value="">Semua Kategori</option>
                         @foreach($kategoris as $kat)
                             <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
-                                {{ $kat->icon }} {{ $kat->nama }}
+                                {{ $kat->nama }}
                             </option>
                         @endforeach
                     </select>
