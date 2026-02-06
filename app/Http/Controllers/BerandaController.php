@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
-use App\Models\Pengumuman;
+use App\Models\LaporanTahunan;
 use App\Models\ProfilBumnag;
 use App\Models\TransaksiKas;
 use App\Models\GaleriBumnag;
@@ -24,13 +24,13 @@ class BerandaController extends Controller
         
         // Berita terbaru (3 berita)
         $beritaTerbaru = Berita::published()
-            ->latest()
+            ->orderBy('tanggal_publikasi', 'desc')
             ->take(3)
             ->get();
         
-        // Pengumuman aktif (4 pengumuman)
-        $pengumumanAktif = Pengumuman::aktif()
-            ->byPrioritas()
+        // Laporan Tahunan terbaru (4 laporan)
+        $laporanTerbaru = LaporanTahunan::published()
+            ->orderBy('tahun', 'desc')
             ->take(4)
             ->get();
         
@@ -57,19 +57,19 @@ class BerandaController extends Controller
         
         // Jumlah total
         $totalBerita = Berita::published()->count();
-        $totalPengumuman = Pengumuman::aktif()->count();
-        $totalLaporan = TransaksiKas::count();
+        $totalLaporan = LaporanTahunan::published()->count();
+        $totalTransaksi = TransaksiKas::count();
         
         return view('public.beranda', compact(
             'profil',
             'beritaTerbaru',
-            'pengumumanAktif',
+            'laporanTerbaru',
             'statistikKeuangan',
             'galeriFoto',
             'transaksiTerbaru',
             'totalBerita',
-            'totalPengumuman',
             'totalLaporan',
+            'totalTransaksi',
             'tahunIni'
         ));
     }
