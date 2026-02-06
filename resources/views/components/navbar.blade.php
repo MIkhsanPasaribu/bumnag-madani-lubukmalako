@@ -34,9 +34,9 @@
                    class="nav-link {{ request()->routeIs('berita.*') ? 'active' : '' }}">
                     Berita
                 </a>
-                <a href="{{ route('pengumuman.index') }}" 
-                   class="nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
-                    Pengumuman
+                <a href="{{ route('laporan-tahunan.index') }}" 
+                   class="nav-link {{ request()->routeIs('laporan-tahunan.*') ? 'active' : '' }}">
+                    Laporan Tahunan
                 </a>
             </nav>
             
@@ -104,9 +104,9 @@
                class="block px-4 py-3 rounded-lg {{ request()->routeIs('berita.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}">
                 Berita
             </a>
-            <a href="{{ route('pengumuman.index') }}" 
-               class="block px-4 py-3 rounded-lg {{ request()->routeIs('pengumuman.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}">
-                Pengumuman
+            <a href="{{ route('laporan-tahunan.index') }}" 
+               class="block px-4 py-3 rounded-lg {{ request()->routeIs('laporan-tahunan.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}">
+                Laporan Tahunan
             </a>
             
             <div class="pt-4 border-t border-gray-100">
