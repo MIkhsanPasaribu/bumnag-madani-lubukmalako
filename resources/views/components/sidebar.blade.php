@@ -13,7 +13,7 @@
     
     {{-- Logo --}}
     <div class="flex items-center gap-3 px-6 h-16 border-b border-gray-800">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto">
+        <img src="{{ $logoUrl }}" alt="Logo" class="h-10 w-auto">
         <div>
             <h2 class="text-white font-bold text-sm">BUMNag Madani</h2>
             <p class="text-gray-400 text-xs">Admin Panel</p>
@@ -63,13 +63,13 @@
         <div class="pt-4">
             <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Keuangan</p>
             
-            {{-- Transaksi Kas / Buku Kas --}}
-            <a href="{{ route('admin.transaksi-kas.index') }}" 
-               class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-white hover:bg-gray-800 {{ request()->routeIs('admin.transaksi-kas.*') ? 'bg-primary' : '' }}">
+            {{-- Laporan Keuangan --}}
+            <a href="{{ route('admin.laporan-keuangan.index') }}" 
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-white hover:bg-gray-800 {{ request()->routeIs('admin.laporan-keuangan.*') ? 'bg-primary' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
-                Buku Kas Harian
+                Laporan Keuangan
             </a>
         </div>
         
@@ -84,6 +84,20 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Galeri BUMNag
+            </a>
+        </div>
+        
+        {{-- Section: Akun --}}
+        <div class="pt-4">
+            <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Akun</p>
+            
+            {{-- Kelola Akun Unit --}}
+            <a href="{{ route('admin.users.index') }}" 
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-white hover:bg-gray-800 {{ request()->routeIs('admin.users.*') ? 'bg-primary' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Kelola Akun Unit
             </a>
         </div>
         

@@ -7,7 +7,7 @@
 @section('content')
 {{-- Hero Banner --}}
 <section class="relative bg-gradient-to-r from-gray-900 to-gray-800 py-12 md:py-16 overflow-hidden">
-    <div class="absolute inset-0 bg-[url('/images/logo.png')] bg-center bg-no-repeat bg-contain opacity-5"></div>
+    <div class="absolute inset-0 bg-[url('/uploads/{{ $profil->logo ?? '' }}')] bg-center bg-no-repeat bg-contain opacity-5"></div>
     <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/10"></div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Hubungi Kami</h1>

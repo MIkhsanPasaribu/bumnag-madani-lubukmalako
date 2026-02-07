@@ -10,7 +10,7 @@
     <title>@yield('title', 'Beranda') - BUMNag Madani Lubuk Malako</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ $logoUrl }}">
     
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

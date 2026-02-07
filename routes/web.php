@@ -15,11 +15,16 @@ use App\Http\Controllers\Admin\ProfilController as AdminProfilController;
 use App\Http\Controllers\Admin\BeritaController as AdminBeritaController;
 use App\Http\Controllers\Admin\LaporanTahunanController as AdminLaporanTahunanController;
 use App\Http\Controllers\Admin\KategoriBeritaController;
-use App\Http\Controllers\Admin\TransaksiKasController;
+use App\Http\Controllers\Admin\LaporanKeuanganController;
 use App\Http\Controllers\Admin\GaleriBumnagController as AdminGaleriBumnagController;
 use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\Admin\KontakInfoController;
 use App\Http\Controllers\Admin\PesanKontakController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Unit\DashboardController as UnitDashboardController;
+use App\Http\Controllers\Unit\LaporanKeuanganController as UnitLaporanKeuanganController;
+use App\Http\Controllers\SubUnit\DashboardController as SubUnitDashboardController;
+use App\Http\Controllers\SubUnit\LaporanKeuanganController as SubUnitLaporanKeuanganController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\TimPengembangController;
 use App\Http\Controllers\HubungiKamiController;
@@ -49,10 +54,10 @@ Route::get('/widget/statistik', [StatistikController::class, 'widget'])->name('s
 Route::get('/transparansi', [TransparansiController::class, 'index'])->name('transparansi');
 Route::get('/transparansi/download/{bulan}/{tahun}', [TransparansiController::class, 'downloadPdf'])->name('transparansi.download');
 Route::get('/transparansi/download-tahunan/{tahun}', [TransparansiController::class, 'downloadPdfTahunan'])->name('transparansi.download.tahunan');
-Route::get('/transparansi/download-semua', [TransparansiController::class, 'downloadPdfSemua'])->name('transparansi.download.semua');
+Route::get('/transparansi/download-unit/{tahun}/{unit}', [TransparansiController::class, 'downloadPdfUnit'])->name('transparansi.download.unit');
 Route::get('/transparansi/excel/{bulan}/{tahun}', [TransparansiController::class, 'downloadExcel'])->name('transparansi.excel');
 Route::get('/transparansi/excel-tahunan/{tahun}', [TransparansiController::class, 'downloadExcelTahunan'])->name('transparansi.excel.tahunan');
-Route::get('/transparansi/excel-semua', [TransparansiController::class, 'downloadExcelSemua'])->name('transparansi.excel.semua');
+Route::get('/transparansi/excel-unit/{tahun}/{unit}', [TransparansiController::class, 'downloadExcelUnit'])->name('transparansi.excel.unit');
 
 // Berita
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
@@ -93,7 +98,7 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 // ADMIN ROUTES (Protected by auth middleware)
 // ==========================================================================
 
-Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'role.admin'])->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -135,12 +140,12 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
         'laporan-tahunan' => 'laporan_tahunan'
     ]);
     
-    // CRUD Transaksi Kas (Buku Kas Harian)
-    Route::get('/transaksi-kas/export-pdf', [TransaksiKasController::class, 'exportPdf'])->name('transaksi-kas.export-pdf');
-    Route::get('/transaksi-kas/export-excel', [TransaksiKasController::class, 'exportExcel'])->name('transaksi-kas.export-excel');
-    Route::get('/transaksi-kas/recalculate', [TransaksiKasController::class, 'recalculateSaldo'])->name('transaksi-kas.recalculate');
-    Route::get('/transaksi-kas/activity', [TransaksiKasController::class, 'activity'])->name('transaksi-kas.activity');
-    Route::resource('transaksi-kas', TransaksiKasController::class);
+    // CRUD Laporan Keuangan (per unit/sub-unit, bulanan)
+    Route::get('/laporan-keuangan/export-pdf', [LaporanKeuanganController::class, 'exportPdf'])->name('laporan-keuangan.export-pdf');
+    Route::get('/laporan-keuangan/export-excel', [LaporanKeuanganController::class, 'exportExcel'])->name('laporan-keuangan.export-excel');
+    Route::get('/laporan-keuangan/activity', [LaporanKeuanganController::class, 'activity'])->name('laporan-keuangan.activity');
+    Route::get('/laporan-keuangan/sub-units/{unit}', [LaporanKeuanganController::class, 'getSubUnits'])->name('laporan-keuangan.sub-units');
+    Route::resource('laporan-keuangan', LaporanKeuanganController::class);
     
     // CRUD Galeri BUMNag
     Route::post('/galeri-bumnag/update-order', [AdminGaleriBumnagController::class, 'updateOrder'])
@@ -162,6 +167,11 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::post('/pesan-kontak/{pesan_kontak}/tandai-dibaca', [PesanKontakController::class, 'tandaiDibaca'])->name('pesan-kontak.tandai-dibaca');
     Route::post('/pesan-kontak/tandai-semua-dibaca', [PesanKontakController::class, 'tandaiSemuaDibaca'])->name('pesan-kontak.tandai-semua-dibaca');
     
+    // Kelola Akun Unit & Sub Unit
+    Route::get('/users/sub-units/{unit}', [AdminUserController::class, 'getSubUnits'])->name('users.sub-units');
+    Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::resource('users', AdminUserController::class)->parameters(['users' => 'user']);
+    
     // Password Management
     Route::get('/ganti-password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/ganti-password', [PasswordController::class, 'update'])->name('password.update');
@@ -169,4 +179,38 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     // Security Question Management
     Route::get('/pertanyaan-keamanan', [PasswordController::class, 'editSecurity'])->name('security.edit');
     Route::put('/pertanyaan-keamanan', [PasswordController::class, 'updateSecurity'])->name('security.update');
+});
+
+// ==========================================================================
+// UNIT USAHA ROUTES (Protected by auth + role.unit middleware)
+// ==========================================================================
+
+Route::prefix('unit')->middleware(['auth', 'role.unit'])->name('unit.')->group(function () {
+    // Dashboard Unit
+    Route::get('/', [UnitDashboardController::class, 'index'])->name('dashboard');
+
+    // Laporan Keuangan Unit
+    Route::resource('laporan-keuangan', UnitLaporanKeuanganController::class)
+        ->parameters(['laporan-keuangan' => 'laporan_keuangan']);
+
+    // Password Management
+    Route::get('/ganti-password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/ganti-password', [PasswordController::class, 'update'])->name('password.update');
+});
+
+// ==========================================================================
+// SUB UNIT USAHA ROUTES (Protected by auth + role.subunit middleware)
+// ==========================================================================
+
+Route::prefix('sub-unit')->middleware(['auth', 'role.subunit'])->name('subunit.')->group(function () {
+    // Dashboard Sub Unit
+    Route::get('/', [SubUnitDashboardController::class, 'index'])->name('dashboard');
+
+    // Laporan Keuangan Sub Unit
+    Route::resource('laporan-keuangan', SubUnitLaporanKeuanganController::class)
+        ->parameters(['laporan-keuangan' => 'laporan_keuangan']);
+
+    // Password Management
+    Route::get('/ganti-password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/ganti-password', [PasswordController::class, 'update'])->name('password.update');
 });

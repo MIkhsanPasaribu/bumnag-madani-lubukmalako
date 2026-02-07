@@ -13,6 +13,7 @@
         'berita' => 'Berita',
         'pengumuman' => 'Pengumuman',
         'keuangan' => 'Laporan Keuangan',
+        'laporan-keuangan' => 'Laporan Keuangan',
         'hubungi-kami' => 'Hubungi Kami',
         'kontak-info' => 'Informasi Kontak',
         'pesan-kontak' => 'Pesan Masuk',

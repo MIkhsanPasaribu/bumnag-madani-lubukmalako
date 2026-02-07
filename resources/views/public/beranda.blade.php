@@ -38,7 +38,7 @@
             <div class="flex justify-center lg:justify-end">
                 <div class="relative">
                     <div class="absolute inset-0 bg-primary/20 rounded-full blur-3xl transform scale-150"></div>
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="relative w-64 md:w-80 lg:w-96 h-auto drop-shadow-2xl">
+                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="relative w-64 md:w-80 lg:w-96 h-auto drop-shadow-2xl">
                 </div>
             </div>
         </div>
@@ -165,8 +165,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Laporan Terpublikasi</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $statistikKeuangan['jumlah_laporan'] ?? 0 }} Bulan</p>
+                <p class="text-sm text-gray-500 mb-1">Data Tercatat</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $statistikKeuangan['jumlah_bulan'] ?? 0 }} Bulan</p>
             </div>
         </div>
         

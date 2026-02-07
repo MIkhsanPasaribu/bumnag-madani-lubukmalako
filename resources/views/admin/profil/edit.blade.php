@@ -321,7 +321,7 @@
                     <div class="p-5">
                         {{-- Current Logo Preview --}}
                         <div class="mb-4">
-                            <div class="w-full aspect-square bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden" x-data="{ previewUrl: '{{ $profil && $profil->logo ? asset('uploads/' . $profil->logo) : '' }}' }">
+                            <div class="w-full aspect-square bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden" x-data="{ previewUrl: '{{ $profil && $profil->logo ? $logoUrl : '' }}' }">
                                 <template x-if="previewUrl">
                                     <img :src="previewUrl" alt="Logo" class="w-full h-full object-contain p-4">
                                 </template>
@@ -344,7 +344,7 @@
                                        class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
                                        @change="handleLogoChange($event)">
                             </label>
-                            <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG. Maksimal 2MB.</p>
+                            <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG. Maksimal 5MB.</p>
                         </div>
                     </div>
                     
@@ -399,8 +399,8 @@ function profilForm() {
         handlePhotoChange(event, index) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 2MB');
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 5MB');
                     event.target.value = '';
                     return;
                 }
@@ -419,8 +419,8 @@ function logoUpload() {
         handleLogoChange(event) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 2MB');
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 5MB');
                     event.target.value = '';
                     return;
                 }

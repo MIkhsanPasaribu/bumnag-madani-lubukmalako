@@ -7,7 +7,7 @@
             {{-- About --}}
             <div class="lg:col-span-2">
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-12 w-auto brightness-0 invert">
+                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-12 w-auto brightness-0 invert">
                     <div>
                         <h3 class="text-lg font-bold">BUMNag Madani</h3>
                         <p class="text-sm text-gray-400">Lubuk Malako</p>

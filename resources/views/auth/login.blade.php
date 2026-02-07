@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login Admin - BUMNag Madani Lubuk Malako</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ $logoUrl }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gradient-to-br from-cream via-white to-primary/5" x-data="loginForm()">
@@ -32,7 +32,7 @@
             {{-- Content --}}
             <div class="relative z-10 flex flex-col justify-center items-center p-12 text-white text-center">
                 <div class="mb-8">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-28 w-auto mx-auto drop-shadow-xl">
+                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-28 w-auto mx-auto drop-shadow-xl">
                 </div>
                 <h1 class="text-3xl xl:text-4xl font-bold mb-4">BUMNag Madani</h1>
                 <p class="text-lg xl:text-xl text-white/90 mb-2">Lubuk Malako</p>
@@ -65,7 +65,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-medium">Buku Kas</span>
+                        <span class="text-sm font-medium">Laporan Keuangan</span>
                     </div>
                     <div class="flex items-center gap-3 bg-white/10 backdrop-blur rounded-lg p-3">
                         <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -85,7 +85,7 @@
                 {{-- Mobile Logo --}}
                 <div class="lg:hidden text-center mb-8">
                     <a href="{{ route('beranda') }}" class="inline-block">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-20 w-auto mx-auto mb-4">
+                        <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-20 w-auto mx-auto mb-4">
                     </a>
                     <h1 class="text-xl font-bold text-gray-900">BUMNag Madani Lubuk Malako</h1>
                 </div>

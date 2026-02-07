@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Lupa Password - BUMNag Madani Lubuk Malako</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ $logoUrl }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gradient-to-br from-cream via-white to-primary/5">
@@ -15,7 +15,7 @@
             {{-- Logo --}}
             <div class="text-center mb-8">
                 <a href="{{ route('beranda') }}" class="inline-block">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-20 w-auto mx-auto mb-4">
+                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-20 w-auto mx-auto mb-4">
                 </a>
                 <h1 class="text-xl font-bold text-gray-900">BUMNag Madani Lubuk Malako</h1>
             </div>

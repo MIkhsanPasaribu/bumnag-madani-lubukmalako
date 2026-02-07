@@ -22,8 +22,9 @@ class DatabaseSeeder extends Seeder
             KategoriBeritaSeeder::class,  // Kategori berita dulu sebelum berita
             BeritaSeeder::class,
             LaporanTahunanSeeder::class,
-            KategoriTransaksiSeeder::class,  // Kategori dulu sebelum transaksi
-            TransaksiKasSeeder::class,
+            UnitUsahaSeeder::class,  // Unit usaha dulu sebelum laporan keuangan
+            UnitUserSeeder::class,   // User akun unit/sub-unit (setelah unit usaha)
+            LaporanKeuanganSeeder::class,
             KontakInfoSeeder::class,
         ]);
     }

@@ -5,7 +5,7 @@
             
             {{-- Logo --}}
             <a href="{{ route('beranda') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-10 md:h-12 w-auto transition-transform group-hover:scale-105">
+                <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-10 md:h-12 w-auto transition-transform group-hover:scale-105">
                 <div class="hidden sm:block">
                     <h1 class="text-lg md:text-xl font-bold text-gray-900 leading-tight">BUMNag Madani</h1>
                     <p class="text-xs text-gray-500">Lubuk Malako</p>

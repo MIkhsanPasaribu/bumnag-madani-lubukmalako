@@ -10,7 +10,7 @@
     {{-- Header --}}
     <div class="text-center mb-12">
         <div class="flex justify-center mb-6">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo BUMNag Madani" class="h-24 md:h-32 w-auto">
+            <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="h-24 md:h-32 w-auto">
         </div>
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{{ $profil->nama_bumnag ?? 'BUMNag Madani' }}</h1>
         <p class="text-xl text-primary font-medium">Nagari {{ $profil->nama_nagari ?? 'Lubuk Malako' }}</p>

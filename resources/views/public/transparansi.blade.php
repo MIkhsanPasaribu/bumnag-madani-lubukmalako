@@ -50,7 +50,7 @@
         </span>
     </div>
     
-    {{-- Summary Cards with Modern Design --}}
+    {{-- Summary Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {{-- Total Pendapatan --}}
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 p-5 hover:shadow-lg transition-shadow">
@@ -89,11 +89,11 @@
                 <p class="text-sm text-primary font-medium">Laba/Rugi</p>
             </div>
             <p class="text-xl lg:text-2xl font-bold {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? 'text-primary' : 'text-red-600' }}">
-                {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format(abs($statistik['total_laba_rugi'] ?? 0), 0, ',', '.') }}
+                {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($statistik['total_laba_rugi'] ?? 0, 0, ',', '.') }}
             </p>
         </div>
         
-        {{-- Total Transaksi --}}
+        {{-- Jumlah Laporan --}}
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-3 mb-3">
                 <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -101,13 +101,97 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </div>
-                <p class="text-sm text-blue-700 font-medium">Total Transaksi</p>
+                <p class="text-sm text-blue-700 font-medium">Jumlah Bulan</p>
             </div>
-            <p class="text-xl lg:text-2xl font-bold text-blue-600">{{ $statistik['jumlah_transaksi'] ?? 0 }}</p>
+            <p class="text-xl lg:text-2xl font-bold text-blue-600">{{ $statistik['jumlah_bulan'] ?? 0 }} <span class="text-sm font-normal text-gray-400">bulan</span></p>
         </div>
     </div>
     
-    {{-- Monthly Reports List - Modern Table --}}
+    {{-- Rekap Per Unit Section --}}
+    @if(count($rekapPerUnit) > 0)
+        <div class="mb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Rekap Per Unit Usaha</h2>
+                    <p class="text-sm text-gray-500">Tahun {{ $tahunFilter }}</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                @foreach($rekapPerUnit as $rekapUnit)
+                    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    @if(str_contains(strtolower($rekapUnit['unit']->nama), 'jasa'))
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    @elseif(str_contains(strtolower($rekapUnit['unit']->nama), 'perkebunan') || str_contains(strtolower($rekapUnit['unit']->nama), 'tani'))
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @elseif(str_contains(strtolower($rekapUnit['unit']->nama), 'dagang') || str_contains(strtolower($rekapUnit['unit']->nama), 'toko'))
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    @endif
+                                </div>
+                                <h3 class="font-semibold text-gray-900 text-sm">{{ $rekapUnit['unit']->nama }}</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-500">Pendapatan</span>
+                                <span class="text-sm font-semibold text-green-600">{{ number_format($rekapUnit['total_pendapatan'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-500">Pengeluaran</span>
+                                <span class="text-sm font-semibold text-red-600">{{ number_format($rekapUnit['total_pengeluaran'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="border-t border-gray-100 pt-2 flex items-center justify-between">
+                                <span class="text-xs font-medium text-gray-700">Laba/Rugi</span>
+                                <span class="text-sm font-bold {{ $rekapUnit['total_laba_rugi'] >= 0 ? 'text-primary' : 'text-red-600' }}">
+                                    {{ $rekapUnit['total_laba_rugi'] >= 0 ? '+' : '' }}{{ number_format($rekapUnit['total_laba_rugi'], 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+                            <a href="{{ route('transparansi.download.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}"
+                               class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                               title="Download PDF">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                PDF
+                            </a>
+                            <a href="{{ route('transparansi.excel.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}"
+                               class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                               title="Download Excel">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Excel
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+    
+    {{-- Monthly Reports Table --}}
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible">
         {{-- Table Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl">
@@ -137,7 +221,8 @@
                     </button>
                     <div x-show="open" x-transition
                          x-cloak
-                         class="absolute right-0 bottom-full mb-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[100] max-h-80 overflow-y-auto">
+                         class="absolute right-0 bottom-full mb-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[100] max-h-96 overflow-y-auto">
+                        {{-- PDF Section --}}
                         <div class="px-3 py-2 border-b border-gray-100">
                             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">PDF</p>
                         </div>
@@ -149,23 +234,26 @@
                                 </svg>
                             </span>
                             <div>
-                                <p class="font-medium">Tahun {{ $tahunFilter }}</p>
+                                <p class="font-medium">Per Tahun {{ $tahunFilter }}</p>
                                 <p class="text-xs text-gray-500">Semua bulan di {{ $tahunFilter }}</p>
                             </div>
                         </a>
-                        <a href="{{ route('transparansi.download.semua') }}" 
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
-                            <span class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                </svg>
-                            </span>
-                            <div>
-                                <p class="font-medium">Semua Data</p>
-                                <p class="text-xs text-gray-500">Seluruh riwayat transaksi</p>
-                            </div>
-                        </a>
+                        @foreach($rekapPerUnit as $rekapUnit)
+                            <a href="{{ route('transparansi.download.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}" 
+                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                <span class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="font-medium">{{ $rekapUnit['unit']->nama }}</p>
+                                    <p class="text-xs text-gray-500">Unit usaha {{ $tahunFilter }}</p>
+                                </div>
+                            </a>
+                        @endforeach
                         
+                        {{-- Excel Section --}}
                         <div class="px-3 py-2 border-t border-b border-gray-100 mt-1">
                             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Excel</p>
                         </div>
@@ -177,22 +265,24 @@
                                 </svg>
                             </span>
                             <div>
-                                <p class="font-medium">Tahun {{ $tahunFilter }}</p>
+                                <p class="font-medium">Per Tahun {{ $tahunFilter }}</p>
                                 <p class="text-xs text-gray-500">Semua bulan di {{ $tahunFilter }}</p>
                             </div>
                         </a>
-                        <a href="{{ route('transparansi.excel.semua') }}" 
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
-                            <span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                </svg>
-                            </span>
-                            <div>
-                                <p class="font-medium">Semua Data</p>
-                                <p class="text-xs text-gray-500">Seluruh riwayat transaksi</p>
-                            </div>
-                        </a>
+                        @foreach($rekapPerUnit as $rekapUnit)
+                            <a href="{{ route('transparansi.excel.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}" 
+                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+                                <span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="font-medium">{{ $rekapUnit['unit']->nama }}</p>
+                                    <p class="text-xs text-gray-500">Unit usaha {{ $tahunFilter }}</p>
+                                </div>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
                 
@@ -211,15 +301,13 @@
                     <thead>
                         <tr class="bg-gray-50/80 border-b border-gray-100">
                             <th class="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Periode</th>
-                            <th class="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaksi</th>
-                            <th class="px-5 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Saldo Awal</th>
                             <th class="px-5 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span>Uang Masuk</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span>Pendapatan</span>
                             </th>
                             <th class="px-5 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span>Uang Keluar</span>
+                                <span class="inline-flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span>Pengeluaran</span>
                             </th>
-                            <th class="px-5 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Saldo Akhir</th>
+                            <th class="px-5 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Laba/Rugi</th>
                             <th class="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -237,18 +325,12 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-5 py-4 text-center">
-                                    <span class="inline-flex items-center justify-center min-w-[2rem] px-2.5 py-1 bg-gray-100 text-gray-700 font-semibold rounded-full text-sm">
-                                        {{ $rekap['jumlah_transaksi'] }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-4 text-right text-gray-600 font-medium">{{ number_format($rekap['saldo_awal'], 0, ',', '.') }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <span class="inline-flex items-center gap-1 text-green-600 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                         </svg>
-                                        {{ number_format($rekap['total_masuk'], 0, ',', '.') }}
+                                        {{ number_format($rekap['total_pendapatan'], 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-4 text-right">
@@ -256,12 +338,12 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                         </svg>
-                                        {{ number_format($rekap['total_keluar'], 0, ',', '.') }}
+                                        {{ number_format($rekap['total_pengeluaran'], 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-4 text-right">
-                                    <span class="font-bold text-lg {{ $rekap['selisih'] >= 0 ? 'text-primary' : 'text-red-600' }}">
-                                        {{ number_format($rekap['saldo_akhir'], 0, ',', '.') }}
+                                    <span class="font-bold text-lg {{ $rekap['laba_rugi'] >= 0 ? 'text-primary' : 'text-red-600' }}">
+                                        {{ $rekap['laba_rugi'] >= 0 ? '+' : '' }}{{ number_format($rekap['laba_rugi'], 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-4">
@@ -302,12 +384,6 @@
                                     <span class="font-bold text-gray-900">Total Tahun {{ $tahunFilter }}</span>
                                 </div>
                             </td>
-                            <td class="px-5 py-4 text-center">
-                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2.5 py-1 bg-primary text-white font-bold rounded-full text-sm">
-                                    {{ $statistik['jumlah_transaksi'] ?? 0 }}
-                                </span>
-                            </td>
-                            <td class="px-5 py-4 text-right text-gray-500">—</td>
                             <td class="px-5 py-4 text-right">
                                 <span class="font-bold text-green-600 text-lg">{{ number_format($statistik['total_pendapatan'] ?? 0, 0, ',', '.') }}</span>
                             </td>
@@ -317,7 +393,7 @@
                             <td class="px-5 py-4 text-right">
                                 <div class="flex flex-col items-end">
                                     <span class="font-bold text-xl {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? 'text-primary' : 'text-red-600' }}">
-                                        {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format(abs($statistik['total_laba_rugi'] ?? 0), 0, ',', '.') }}
+                                        {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($statistik['total_laba_rugi'] ?? 0, 0, ',', '.') }}
                                     </span>
                                     <span class="text-xs font-medium {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-500' }}">
                                         {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '✓ Surplus' : '✗ Defisit' }}
@@ -344,27 +420,24 @@
                                     <span class="text-gray-500">{{ $rekap['tahun'] }}</span>
                                 </div>
                             </div>
-                            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
-                                {{ $rekap['jumlah_transaksi'] }} trx
-                            </span>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-3 mb-3">
                             <div class="bg-green-50 rounded-lg p-2.5 text-center">
-                                <p class="text-xs text-green-600 mb-0.5">Masuk</p>
-                                <p class="font-bold text-green-600 text-sm">{{ number_format($rekap['total_masuk'], 0, ',', '.') }}</p>
+                                <p class="text-xs text-green-600 mb-0.5">Pendapatan</p>
+                                <p class="font-bold text-green-600 text-sm">{{ number_format($rekap['total_pendapatan'], 0, ',', '.') }}</p>
                             </div>
                             <div class="bg-red-50 rounded-lg p-2.5 text-center">
-                                <p class="text-xs text-red-600 mb-0.5">Keluar</p>
-                                <p class="font-bold text-red-600 text-sm">{{ number_format($rekap['total_keluar'], 0, ',', '.') }}</p>
+                                <p class="text-xs text-red-600 mb-0.5">Pengeluaran</p>
+                                <p class="font-bold text-red-600 text-sm">{{ number_format($rekap['total_pengeluaran'], 0, ',', '.') }}</p>
                             </div>
                         </div>
                         
                         <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                             <div>
-                                <p class="text-xs text-gray-500">Saldo Akhir</p>
-                                <p class="font-bold {{ $rekap['selisih'] >= 0 ? 'text-primary' : 'text-red-600' }}">
-                                    {{ number_format($rekap['saldo_akhir'], 0, ',', '.') }}
+                                <p class="text-xs text-gray-500">Laba/Rugi</p>
+                                <p class="font-bold {{ $rekap['laba_rugi'] >= 0 ? 'text-primary' : 'text-red-600' }}">
+                                    {{ $rekap['laba_rugi'] >= 0 ? '+' : '' }}{{ number_format($rekap['laba_rugi'], 0, ',', '.') }}
                                 </p>
                             </div>
                             <div class="flex gap-1">
@@ -404,18 +477,18 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="bg-white/80 rounded-lg p-3 text-center">
-                            <p class="text-xs text-green-600 mb-1">Masuk</p>
+                            <p class="text-xs text-green-600 mb-1">Pendapatan</p>
                             <p class="font-bold text-green-600">{{ number_format($statistik['total_pendapatan'] ?? 0, 0, ',', '.') }}</p>
                         </div>
                         <div class="bg-white/80 rounded-lg p-3 text-center">
-                            <p class="text-xs text-red-600 mb-1">Keluar</p>
+                            <p class="text-xs text-red-600 mb-1">Pengeluaran</p>
                             <p class="font-bold text-red-600">{{ number_format($statistik['total_pengeluaran'] ?? 0, 0, ',', '.') }}</p>
                         </div>
                     </div>
                     <div class="bg-white/80 rounded-lg p-3 text-center">
-                        <p class="text-sm text-gray-600 mb-1">Saldo Bersih</p>
+                        <p class="text-sm text-gray-600 mb-1">Laba/Rugi</p>
                         <p class="font-bold text-xl {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? 'text-primary' : 'text-red-600' }}">
-                            {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format(abs($statistik['total_laba_rugi'] ?? 0), 0, ',', '.') }}
+                            {{ ($statistik['total_laba_rugi'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($statistik['total_laba_rugi'] ?? 0, 0, ',', '.') }}
                         </p>
                     </div>
                 </div>
@@ -424,7 +497,7 @@
             <div class="p-8">
                 <x-empty-state 
                     title="Belum ada laporan"
-                    :description="'Belum ada data transaksi keuangan untuk tahun ' . $tahunFilter"
+                    :description="'Belum ada data laporan keuangan untuk tahun ' . $tahunFilter"
                     icon="document"
                 />
             </div>
@@ -442,8 +515,9 @@
             <div>
                 <h4 class="font-semibold text-gray-900 mb-1">Tentang Transparansi Keuangan</h4>
                 <p class="text-sm text-gray-600">
-                    Halaman ini menampilkan seluruh transaksi keuangan BUMNag Madani Lubuk Malako secara terbuka. 
-                    Anda dapat melihat detail transaksi harian dan mengunduh laporan dalam format PDF untuk setiap periode.
+                    Halaman ini menampilkan laporan keuangan BUMNag Madani Lubuk Malako secara terbuka kepada publik.
+                    Anda dapat melihat rekap pendapatan, pengeluaran, dan laba/rugi per bulan maupun per unit usaha,
+                    serta mengunduh laporan dalam format PDF atau Excel untuk setiap periode.
                 </p>
             </div>
         </div>

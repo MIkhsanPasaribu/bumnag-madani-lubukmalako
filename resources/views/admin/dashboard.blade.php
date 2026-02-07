@@ -56,13 +56,13 @@
         </div>
     </div>
     
-    {{-- Total Transaksi --}}
+    {{-- Total Laporan Keuangan --}}
     <div class="bento-card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm text-gray-500 mb-1">Transaksi Kas</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalTransaksi }}</p>
-                <p class="text-xs text-green-600 mt-1">Buku kas harian</p>
+                <p class="text-sm text-gray-500 mb-1">Laporan Keuangan</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $totalLaporanKeuangan }}</p>
+                <p class="text-xs text-green-600 mt-1">Per unit/sub-unit</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,7 +96,7 @@
     <div class="bento-card">
         <div class="flex items-center justify-between mb-4">
             <h3 class="font-semibold text-gray-900">Grafik Keuangan {{ $tahunIni }}</h3>
-            <a href="{{ route('admin.transaksi-kas.index') }}" class="text-sm text-primary hover:underline">Lihat Detail</a>
+            <a href="{{ route('admin.laporan-keuangan.index') }}" class="text-sm text-primary hover:underline">Lihat Detail</a>
         </div>
         <div class="h-64">
             <canvas id="financeChart"></canvas>
