@@ -16,9 +16,9 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        // Redirect ke dashboard jika sudah login
+        // Redirect ke dashboard sesuai role jika sudah login
         if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route(Auth::user()->getDashboardRoute());
         }
         
         return view('auth.login');
@@ -43,7 +43,9 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             
-            return redirect()->intended(route('admin.dashboard'))
+            $dashboardRoute = Auth::user()->getDashboardRoute();
+            
+            return redirect()->intended(route($dashboardRoute))
                 ->with('success', 'Selamat datang, ' . Auth::user()->name . '!');
         }
         

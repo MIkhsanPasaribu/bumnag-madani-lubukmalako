@@ -42,7 +42,7 @@ class ProfilController extends Controller
             'sejarah' => 'nullable|string',
             'visi' => 'nullable|string',
             'misi' => 'nullable|string',
-            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
             'struktur_organisasi' => 'nullable|array',
             'struktur_organisasi.*.jabatan' => 'required_with:struktur_organisasi|string',
             'struktur_organisasi.*.nama' => 'required_with:struktur_organisasi|string',
@@ -55,7 +55,7 @@ class ProfilController extends Controller
             'email.email' => 'Format email tidak valid.',
             'website.url' => 'Format URL tidak valid.',
             'logo.image' => 'Logo harus berupa gambar.',
-            'logo.max' => 'Ukuran logo maksimal 2MB.',
+            'logo.max' => 'Ukuran logo maksimal 5MB.',
         ]);
         
         $profil = ProfilBumnag::first();

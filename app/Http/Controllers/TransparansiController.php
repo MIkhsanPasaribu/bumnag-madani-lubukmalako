@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TransaksiKas;
-use App\Exports\TransaksiKasExport;
+use App\Models\LaporanKeuangan;
+use App\Models\UnitUsaha;
+use App\Exports\LaporanKeuanganExport;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Controller untuk halaman transparansi keuangan publik
+ * Menampilkan rekap dan download laporan keuangan
  */
 class TransparansiController extends Controller
 {
@@ -19,139 +21,191 @@ class TransparansiController extends Controller
     public function index(Request $request)
     {
         // Tahun yang tersedia
-        $tahunTersedia = TransaksiKas::getTahunTersedia();
+        $tahunTersedia = LaporanKeuangan::getTahunTersedia();
         if (empty($tahunTersedia)) {
             $tahunTersedia = [date('Y')];
         }
-        
+
         // Filter
         $tahunFilter = $request->get('tahun', $tahunTersedia[0] ?? date('Y'));
-        
+
         // Rekap bulanan untuk tahun terpilih
-        $rekapBulanan = TransaksiKas::getRekapTahunan($tahunFilter);
-        
-        // Statistik keseluruhan tahun terpilih
-        $dataTransaksi = TransaksiKas::tahun($tahunFilter)->get();
-        $statistik = [
-            'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
-            'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
-            'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
-            'jumlah_transaksi' => $dataTransaksi->count(),
-        ];
-        
+        $rekapBulanan = LaporanKeuangan::getRekapTahunan($tahunFilter);
+
+        // Statistik keseluruhan
+        $statistik = LaporanKeuangan::getStatistikTahunan($tahunFilter);
+
+        // Unit usaha
+        $units = UnitUsaha::aktif()->ordered()->get();
+
+        // Rekap per unit
+        $rekapPerUnit = [];
+        foreach ($units as $unit) {
+            $unitData = LaporanKeuangan::tahun($tahunFilter)->unit($unit->id)->get();
+            $rekapPerUnit[] = [
+                'unit' => $unit,
+                'total_pendapatan' => (float) $unitData->sum('pendapatan'),
+                'total_pengeluaran' => (float) $unitData->sum('pengeluaran'),
+                'total_laba_rugi' => (float) $unitData->sum('pendapatan') - (float) $unitData->sum('pengeluaran'),
+            ];
+        }
+
         return view('public.transparansi', compact(
             'rekapBulanan',
             'tahunTersedia',
             'tahunFilter',
-            'statistik'
+            'statistik',
+            'units',
+            'rekapPerUnit'
         ));
     }
-    
+
     /**
-     * Download PDF Buku Kas per bulan
+     * Download PDF per bulan (gabungan semua unit)
      */
     public function downloadPdf(int $bulan, int $tahun)
     {
-        $transaksi = TransaksiKas::bulan($bulan, $tahun)
-            ->urut()
+        $laporan = LaporanKeuangan::with(['unit', 'subUnit'])
+            ->bulan($bulan, $tahun)
+            ->orderBy('unit_id')
+            ->orderBy('sub_unit_id')
             ->get();
-        
-        $rekap = TransaksiKas::getRekapBulanan($bulan, $tahun);
-        $periode = TransaksiKas::$namaBulan[$bulan] . ' ' . $tahun;
-        
-        $pdf = Pdf::loadView('pdf.buku-kas', compact('transaksi', 'rekap', 'bulan', 'tahun', 'periode'));
+
+        $rekap = [
+            'periode' => LaporanKeuangan::$namaBulan[$bulan] . ' ' . $tahun,
+            'unit_nama' => null,
+            'total_pendapatan' => (float) $laporan->sum('pendapatan'),
+            'total_pengeluaran' => (float) $laporan->sum('pengeluaran'),
+            'total_laba_rugi' => (float) $laporan->sum('pendapatan') - (float) $laporan->sum('pengeluaran'),
+            'jumlah_laporan' => $laporan->count(),
+        ];
+
+        $rekapPerUnit = $this->buildRekapPerUnit($laporan);
+
+        $pdf = Pdf::loadView('pdf.laporan-keuangan', compact('laporan', 'rekap', 'rekapPerUnit', 'bulan', 'tahun'));
         $pdf->setPaper('a4', 'landscape');
-        
-        $filename = 'buku_kas_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . $tahun . '.pdf';
-        
-        return $pdf->download($filename);
+
+        return $pdf->download('laporan_keuangan_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . $tahun . '.pdf');
     }
-    
+
     /**
-     * Download PDF Buku Kas per tahun (12 bulan)
+     * Download PDF per tahun (gabungan semua unit)
      */
     public function downloadPdfTahunan(int $tahun)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
-        
-        $transaksi = TransaksiKas::tahun($tahun)->urut()->get();
+
+        $laporan = LaporanKeuangan::with(['unit', 'subUnit'])
+            ->tahun($tahun)
+            ->orderBy('bulan')
+            ->orderBy('unit_id')
+            ->orderBy('sub_unit_id')
+            ->get();
+
         $rekap = [
             'periode' => 'Tahun ' . $tahun,
-            'jumlah_transaksi' => $transaksi->count(),
-            'saldo_awal' => TransaksiKas::getSaldoAwalBulan(1, $tahun),
-            'total_masuk' => $transaksi->sum('uang_masuk'),
-            'total_keluar' => $transaksi->sum('uang_keluar'),
-            'saldo_akhir' => TransaksiKas::tahun($tahun)->orderBy('tanggal', 'desc')->orderBy('no_urut', 'desc')->value('saldo') ?? 0,
+            'unit_nama' => null,
+            'total_pendapatan' => (float) $laporan->sum('pendapatan'),
+            'total_pengeluaran' => (float) $laporan->sum('pengeluaran'),
+            'total_laba_rugi' => (float) $laporan->sum('pendapatan') - (float) $laporan->sum('pengeluaran'),
+            'jumlah_laporan' => $laporan->count(),
         ];
-        $rekap['selisih'] = $rekap['total_masuk'] - $rekap['total_keluar'];
-        $periode = 'Tahun ' . $tahun;
+
+        $rekapPerUnit = $this->buildRekapPerUnit($laporan);
         $bulan = null;
-        
-        $pdf = Pdf::loadView('pdf.buku-kas', compact('transaksi', 'rekap', 'bulan', 'tahun', 'periode'));
+
+        $pdf = Pdf::loadView('pdf.laporan-keuangan', compact('laporan', 'rekap', 'rekapPerUnit', 'bulan', 'tahun'));
         $pdf->setPaper('a4', 'landscape');
-        
-        return $pdf->download('buku_kas_tahun_' . $tahun . '.pdf');
+
+        return $pdf->download('laporan_keuangan_tahun_' . $tahun . '.pdf');
     }
-    
+
     /**
-     * Download PDF Buku Kas semua data
+     * Download PDF per unit
      */
-    public function downloadPdfSemua()
+    public function downloadPdfUnit(int $tahun, int $unitId)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
-        
-        $transaksi = TransaksiKas::urut()->get();
-        $lastTrx = TransaksiKas::orderBy('tanggal', 'desc')->orderBy('no_urut', 'desc')->first();
+
+        $unit = UnitUsaha::findOrFail($unitId);
+
+        $laporan = LaporanKeuangan::with(['unit', 'subUnit'])
+            ->tahun($tahun)
+            ->unit($unitId)
+            ->orderBy('bulan')
+            ->orderBy('sub_unit_id')
+            ->get();
+
         $rekap = [
-            'periode' => 'Semua Data',
-            'jumlah_transaksi' => $transaksi->count(),
-            'saldo_awal' => 0,
-            'total_masuk' => $transaksi->sum('uang_masuk'),
-            'total_keluar' => $transaksi->sum('uang_keluar'),
-            'saldo_akhir' => $lastTrx?->saldo ?? 0,
+            'periode' => 'Tahun ' . $tahun,
+            'unit_nama' => $unit->nama,
+            'total_pendapatan' => (float) $laporan->sum('pendapatan'),
+            'total_pengeluaran' => (float) $laporan->sum('pengeluaran'),
+            'total_laba_rugi' => (float) $laporan->sum('pendapatan') - (float) $laporan->sum('pengeluaran'),
+            'jumlah_laporan' => $laporan->count(),
         ];
-        $rekap['selisih'] = $rekap['total_masuk'] - $rekap['total_keluar'];
-        $periode = 'Semua Data';
+
+        $rekapPerUnit = [];
         $bulan = null;
-        $tahun = null;
-        
-        $pdf = Pdf::loadView('pdf.buku-kas', compact('transaksi', 'rekap', 'bulan', 'tahun', 'periode'));
+
+        $pdf = Pdf::loadView('pdf.laporan-keuangan', compact('laporan', 'rekap', 'rekapPerUnit', 'bulan', 'tahun'));
         $pdf->setPaper('a4', 'landscape');
-        
-        return $pdf->download('buku_kas_lengkap.pdf');
+
+        return $pdf->download('laporan_keuangan_' . $tahun . '_' . strtolower(str_replace(' ', '_', $unit->nama)) . '.pdf');
     }
-    
+
     /**
-     * Download Excel Buku Kas per bulan
+     * Download Excel per bulan
      */
     public function downloadExcel(int $bulan, int $tahun)
     {
-        $filename = 'Buku_Kas_' . TransaksiKas::$namaBulan[$bulan] . '_' . $tahun . '.xlsx';
-        
-        return Excel::download(new TransaksiKasExport($bulan, $tahun), $filename);
+        $filename = 'Laporan_Keuangan_' . LaporanKeuangan::$namaBulan[$bulan] . '_' . $tahun . '.xlsx';
+
+        return Excel::download(new LaporanKeuanganExport($bulan, $tahun), $filename);
     }
-    
+
     /**
-     * Download Excel Buku Kas per tahun (12 bulan)
+     * Download Excel per tahun
      */
     public function downloadExcelTahunan(int $tahun)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
-        
-        return Excel::download(new TransaksiKasExport(null, $tahun), 'Buku_Kas_Tahun_' . $tahun . '.xlsx');
+
+        return Excel::download(new LaporanKeuanganExport(null, $tahun), 'Laporan_Keuangan_Tahun_' . $tahun . '.xlsx');
     }
-    
+
     /**
-     * Download Excel Buku Kas semua data
+     * Download Excel per unit
      */
-    public function downloadExcelSemua()
+    public function downloadExcelUnit(int $tahun, int $unitId)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
-        
-        return Excel::download(new TransaksiKasExport(null, null), 'Buku_Kas_Lengkap.xlsx');
+
+        $unit = UnitUsaha::findOrFail($unitId);
+        $filename = 'Laporan_Keuangan_' . $tahun . '_' . str_replace(' ', '_', $unit->nama) . '.xlsx';
+
+        return Excel::download(new LaporanKeuanganExport(null, $tahun, $unitId), $filename);
+    }
+
+    /**
+     * Helper: build rekap per unit dari collection
+     */
+    private function buildRekapPerUnit($laporan): array
+    {
+        $result = [];
+        foreach ($laporan->groupBy('unit_id') as $group) {
+            $unit = $group->first()->unit;
+            $result[] = [
+                'nama_unit' => $unit->nama ?? '-',
+                'total_pendapatan' => (float) $group->sum('pendapatan'),
+                'total_pengeluaran' => (float) $group->sum('pengeluaran'),
+                'total_laba_rugi' => (float) $group->sum('pendapatan') - (float) $group->sum('pengeluaran'),
+            ];
+        }
+        return $result;
     }
 }

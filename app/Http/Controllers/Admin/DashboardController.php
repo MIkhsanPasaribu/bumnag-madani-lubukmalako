@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
+use App\Models\LaporanKeuangan;
 use App\Models\LaporanTahunan;
 use App\Models\PesanKontak;
-use App\Models\TransaksiKas;
 use Illuminate\Http\Request;
 
 /**
@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $totalBeritaPublished = Berita::published()->count();
         $totalLaporanTahunan = LaporanTahunan::count();
         $totalLaporanPublished = LaporanTahunan::published()->count();
-        $totalTransaksi = TransaksiKas::count();
+        $totalLaporanKeuangan = LaporanKeuangan::count();
         $totalPesanBelumDibaca = PesanKontak::belumDibaca()->count();
         
         // Berita terbaru (5)
@@ -33,22 +33,16 @@ class DashboardController extends Controller
         // Laporan Tahunan terbaru (5)
         $laporanTerbaru = LaporanTahunan::latest()->take(5)->get();
         
-        // Statistik keuangan tahun ini dari TransaksiKas
+        // Statistik keuangan tahun ini dari LaporanKeuangan
         $tahunIni = date('Y');
-        $dataTransaksi = TransaksiKas::tahun($tahunIni)->get();
-        $statistikKeuangan = [
-            'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
-            'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
-            'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
-            'jumlah_transaksi' => $dataTransaksi->count(),
-        ];
+        $statistikKeuangan = LaporanKeuangan::getStatistikTahunan($tahunIni);
         
         // Data untuk chart mini dari rekap bulanan
-        $rekapBulanan = TransaksiKas::getRekapTahunan($tahunIni);
+        $rekapBulanan = LaporanKeuangan::getRekapTahunan($tahunIni);
         $chartData = [
             'labels' => array_column($rekapBulanan, 'nama_bulan'),
-            'pendapatan' => array_column($rekapBulanan, 'total_masuk'),
-            'pengeluaran' => array_column($rekapBulanan, 'total_keluar'),
+            'pendapatan' => array_column($rekapBulanan, 'total_pendapatan'),
+            'pengeluaran' => array_column($rekapBulanan, 'total_pengeluaran'),
         ];
         
         return view('admin.dashboard', compact(
@@ -56,7 +50,7 @@ class DashboardController extends Controller
             'totalBeritaPublished',
             'totalLaporanTahunan',
             'totalLaporanPublished',
-            'totalTransaksi',
+            'totalLaporanKeuangan',
             'totalPesanBelumDibaca',
             'beritaTerbaru',
             'laporanTerbaru',

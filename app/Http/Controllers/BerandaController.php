@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Berita;
 use App\Models\LaporanTahunan;
 use App\Models\ProfilBumnag;
-use App\Models\TransaksiKas;
+use App\Models\LaporanKeuangan;
 use App\Models\GaleriBumnag;
 use Illuminate\Http\Request;
 
@@ -34,31 +34,18 @@ class BerandaController extends Controller
             ->take(4)
             ->get();
         
-        // Statistik keuangan tahun ini dari TransaksiKas
+        // Statistik keuangan tahun ini dari LaporanKeuangan
         $tahunIni = date('Y');
-        $dataTransaksi = TransaksiKas::tahun($tahunIni)->get();
-        
-        // Rekap bulanan untuk menghitung jumlah bulan yang ada data
-        $rekapBulanan = TransaksiKas::getRekapTahunan($tahunIni);
-        
-        $statistikKeuangan = [
-            'total_pendapatan' => $dataTransaksi->sum('uang_masuk'),
-            'total_pengeluaran' => $dataTransaksi->sum('uang_keluar'),
-            'total_laba_rugi' => $dataTransaksi->sum('uang_masuk') - $dataTransaksi->sum('uang_keluar'),
-            'jumlah_transaksi' => $dataTransaksi->count(),
-            'jumlah_laporan' => count($rekapBulanan), // Jumlah bulan yang ada transaksi
-        ];
+        $statistikKeuangan = LaporanKeuangan::getStatistikTahunan($tahunIni);
+        $rekapBulanan = LaporanKeuangan::getRekapTahunan($tahunIni);
+        $statistikKeuangan['jumlah_bulan'] = count($rekapBulanan);
         
         // Galeri BUMNag untuk slider (8 foto terbaru)
         $galeriFoto = GaleriBumnag::aktif()->ordered()->limit(8)->get();
         
-        // Transaksi terbaru
-        $transaksiTerbaru = TransaksiKas::terbaru()->first();
-        
         // Jumlah total
         $totalBerita = Berita::published()->count();
         $totalLaporan = LaporanTahunan::published()->count();
-        $totalTransaksi = TransaksiKas::count();
         
         return view('public.beranda', compact(
             'profil',
@@ -66,10 +53,8 @@ class BerandaController extends Controller
             'laporanTerbaru',
             'statistikKeuangan',
             'galeriFoto',
-            'transaksiTerbaru',
             'totalBerita',
             'totalLaporan',
-            'totalTransaksi',
             'tahunIni'
         ));
     }
