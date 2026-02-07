@@ -43,14 +43,13 @@ bump2384@embaloh:~$
 Copy-paste **SEMUA COMMAND INI** ke Terminal cPanel:
 
 ```bash
-# Download deployment script dari GitHub
+# Langsung clone repository
 cd ~/public_html
-curl -O https://raw.githubusercontent.com/MIkhsanPasaribu/bumnag-madani-lubukmalako/main/deploy-cpanel.sh
+git clone https://github.com/MIkhsanPasaribu/bumnag-madani-lubukmalako.git
+cd bumnag-madani-lubukmalako
 
-# Set permission
+# Jalankan script yang sudah ada di repository
 chmod +x deploy-cpanel.sh
-
-# Jalankan deployment
 ./deploy-cpanel.sh
 ```
 
@@ -84,7 +83,7 @@ APP_URL=https://bumnagmadani.com
 
 DB_DATABASE=bump2384_bumnag_madani
 DB_USERNAME=bump2384_admin
-DB_PASSWORD=password_database_yang_kamu_buat_tadi
+DB_PASSWORD=Bumnagmadani123.
 ```
 
 **Simpan:**
