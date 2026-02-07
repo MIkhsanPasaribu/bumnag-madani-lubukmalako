@@ -67,7 +67,29 @@ echo ""
 # STEP 3: Install Composer Dependencies
 # ===================================================================
 echo -e "${YELLOW}[3/8] Installing Composer dependencies...${NC}"
-composer install --optimize-autoloader --no-dev --no-interaction
+
+# Try to find composer
+if command -v composer &> /dev/null; then
+    COMPOSER_CMD="composer"
+elif command -v /usr/local/bin/composer &> /dev/null; then
+    COMPOSER_CMD="/usr/local/bin/composer"
+elif command -v /opt/cpanel/composer/bin/composer &> /dev/null; then
+    COMPOSER_CMD="/opt/cpanel/composer/bin/composer"
+elif [ -f "$HOME/bin/composer" ]; then
+    COMPOSER_CMD="$HOME/bin/composer"
+elif [ -f "$HOME/composer.phar" ]; then
+    COMPOSER_CMD="php $HOME/composer.phar"
+elif [ -f "composer.phar" ]; then
+    COMPOSER_CMD="php composer.phar"
+else
+    echo -e "${RED}✗ Composer not found!${NC}"
+    echo -e "${YELLOW}Trying to download composer...${NC}"
+    curl -sS https://getcomposer.org/installer | php
+    COMPOSER_CMD="php composer.phar"
+fi
+
+echo "Using Composer: $COMPOSER_CMD"
+$COMPOSER_CMD install --optimize-autoloader --no-dev --no-interaction
 echo -e "${GREEN}✓ Composer dependencies installed${NC}"
 echo ""
 
@@ -75,7 +97,22 @@ echo ""
 # STEP 4: Install NPM Dependencies
 # ===================================================================
 echo -e "${YELLOW}[4/8] Installing NPM dependencies...${NC}"
-npm install --silent
+
+# Try to find npm
+if command -v npm &> /dev/null; then
+    NPM_CMD="npm"
+elif command -v /usr/local/bin/npm &> /dev/null; then
+    NPM_CMD="/usr/local/bin/npm"
+elif command -v /opt/cpanel/ea-nodejs16/bin/npm &> /dev/null; then
+    NPM_CMD="/opt/cpanel/ea-nodejs16/bin/npm"
+else
+    echo -e "${RED}✗ NPM not found!${NC}"
+    echo "Please contact your hosting provider to install Node.js and NPM"
+    exit 1
+fi
+
+echo "Using NPM: $NPM_CMD"
+$NPM_CMD install --silent
 echo -e "${GREEN}✓ NPM dependencies installed${NC}"
 echo ""
 
@@ -83,7 +120,7 @@ echo ""
 # STEP 5: Build Production Assets
 # ===================================================================
 echo -e "${YELLOW}[5/8] Building production assets...${NC}"
-npm run build
+$NPM_CMD run build
 echo -e "${GREEN}✓ Assets built successfully${NC}"
 echo ""
 
