@@ -4,12 +4,13 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * Model User untuk admin BUMNag
+ * Model User untuk admin, unit, dan sub unit BUMNag
  */
 class User extends Authenticatable
 {
@@ -17,14 +18,14 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
         'role',
+        'unit_id',
+        'sub_unit_id',
         'security_question',
         'security_answer',
     ];
@@ -62,11 +63,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi: User membuat banyak transaksi kas
+     * Relasi: User membuat banyak laporan keuangan
      */
-    public function transaksiKas(): HasMany
+    public function laporanKeuangan(): HasMany
     {
-        return $this->hasMany(TransaksiKas::class, 'created_by');
+        return $this->hasMany(LaporanKeuangan::class, 'created_by');
+    }
+
+    /**
+     * Relasi: User terkait dengan unit usaha
+     */
+    public function unitUsaha(): BelongsTo
+    {
+        return $this->belongsTo(UnitUsaha::class, 'unit_id');
+    }
+
+    /**
+     * Relasi: User terkait dengan sub unit usaha
+     */
+    public function subUnitUsaha(): BelongsTo
+    {
+        return $this->belongsTo(SubUnitUsaha::class, 'sub_unit_id');
     }
 
     /**
@@ -83,6 +100,57 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Cek apakah user adalah admin atau super admin
+     */
+    public function isAdminLevel(): bool
+    {
+        return in_array($this->role, ['admin', 'super_admin']);
+    }
+
+    /**
+     * Cek apakah user adalah akun unit usaha
+     */
+    public function isUnit(): bool
+    {
+        return $this->role === 'unit';
+    }
+
+    /**
+     * Cek apakah user adalah akun sub unit usaha
+     */
+    public function isSubUnit(): bool
+    {
+        return $this->role === 'sub_unit';
+    }
+
+    /**
+     * Mendapatkan nama role yang readable
+     */
+    public function getRoleLabel(): string
+    {
+        return match ($this->role) {
+            'super_admin' => 'Super Admin',
+            'admin' => 'Admin',
+            'unit' => 'Unit ' . ($this->unitUsaha?->nama ?? ''),
+            'sub_unit' => 'Sub Unit ' . ($this->subUnitUsaha?->nama ?? ''),
+            default => 'Unknown',
+        };
+    }
+
+    /**
+     * Dashboard route berdasarkan role
+     */
+    public function getDashboardRoute(): string
+    {
+        return match ($this->role) {
+            'super_admin', 'admin' => 'admin.dashboard',
+            'unit' => 'unit.dashboard',
+            'sub_unit' => 'subunit.dashboard',
+            default => 'beranda',
+        };
     }
 
     /**
