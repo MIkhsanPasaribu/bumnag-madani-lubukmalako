@@ -77,6 +77,15 @@
         <div class="pt-4">
             <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Media</p>
             
+            {{-- Hero Slide --}}
+            <a href="{{ route('admin.hero-slide.index') }}" 
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-white hover:bg-gray-800 {{ request()->routeIs('admin.hero-slide.*') ? 'bg-primary' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+                Hero Slide
+            </a>
+            
             {{-- Galeri BUMNag --}}
             <a href="{{ route('admin.galeri-bumnag.index') }}" 
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-white hover:bg-gray-800 {{ request()->routeIs('admin.galeri-bumnag.*') ? 'bg-primary' : '' }}">
