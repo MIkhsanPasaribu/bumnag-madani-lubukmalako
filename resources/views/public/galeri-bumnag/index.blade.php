@@ -5,7 +5,7 @@
 @section('meta_description', 'Galeri foto kegiatan dan dokumentasi BUMNag Madani Lubuk Malako')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pattern-diagonal">
     
     {{-- Header --}}
     <div class="text-center mb-12">
