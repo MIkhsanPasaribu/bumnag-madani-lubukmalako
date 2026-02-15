@@ -334,7 +334,7 @@ class LaporanKeuangan extends Model
     }
 
     /**
-     * Rekap per unit untuk setahun (untuk PDF/Excel per unit)
+     * Rekap per unit untuk setahun (untuk PDF per unit)
      */
     public static function getRekapTahunanPerUnit(int $tahun, int $unitId): array
     {
@@ -374,5 +374,99 @@ class LaporanKeuangan extends Model
             'jumlah_laporan' => $data->count(),
             'jumlah_bulan' => $data->unique('bulan')->count(),
         ];
+    }
+
+    /**
+     * Statistik per unit untuk tahun tertentu
+     */
+    public static function getStatistikPerUnit(int $tahun, int $unitId): array
+    {
+        $data = static::where('tahun', $tahun)->where('unit_id', $unitId)->get();
+
+        $totalPendapatan = (float) $data->sum('pendapatan');
+        $totalPengeluaran = (float) $data->sum('pengeluaran');
+
+        return [
+            'total_pendapatan' => $totalPendapatan,
+            'total_pengeluaran' => $totalPengeluaran,
+            'total_laba_rugi' => $totalPendapatan - $totalPengeluaran,
+            'jumlah_laporan' => $data->count(),
+            'jumlah_bulan' => $data->unique('bulan')->count(),
+        ];
+    }
+
+    /**
+     * Cek apakah sudah ada laporan untuk periode + unit + sub_unit tertentu
+     * Mengembalikan laporan yang ada beserta info siapa yang menginput
+     */
+    public static function findExistingReport(
+        int $unitId,
+        ?int $subUnitId,
+        int $bulan,
+        int $tahun,
+        ?int $excludeId = null
+    ): ?self {
+        $query = static::with('createdBy')
+            ->where('unit_id', $unitId)
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun);
+
+        if ($subUnitId) {
+            $query->where('sub_unit_id', $subUnitId);
+        } else {
+            $query->whereNull('sub_unit_id');
+        }
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Cek apakah ada laporan yang diinput oleh admin untuk unit/sub-unit dan periode tertentu
+     */
+    public static function isInputByAdmin(int $unitId, ?int $subUnitId, int $bulan, int $tahun): bool
+    {
+        $existing = static::findExistingReport($unitId, $subUnitId, $bulan, $tahun);
+
+        if (!$existing || !$existing->createdBy) {
+            return false;
+        }
+
+        return $existing->createdBy->isAdminLevel();
+    }
+
+    /**
+     * Cek apakah ada laporan yang diinput oleh unit induk untuk sub-unit tertentu
+     */
+    public static function isInputByUnit(int $unitId, int $subUnitId, int $bulan, int $tahun): bool
+    {
+        $existing = static::findExistingReport($unitId, $subUnitId, $bulan, $tahun);
+
+        if (!$existing || !$existing->createdBy) {
+            return false;
+        }
+
+        return $existing->createdBy->isUnit();
+    }
+
+    /**
+     * Mendapatkan info siapa yang menginput laporan
+     */
+    public function getCreatorInfoAttribute(): ?string
+    {
+        $creator = $this->createdBy;
+        if (!$creator) {
+            return null;
+        }
+
+        return match ($creator->role) {
+            'super_admin', 'admin' => 'Admin (' . $creator->name . ')',
+            'unit' => 'Unit ' . ($creator->unitUsaha?->nama ?? '') . ' (' . $creator->name . ')',
+            'sub_unit' => 'Sub Unit ' . ($creator->subUnitUsaha?->nama ?? '') . ' (' . $creator->name . ')',
+            default => $creator->name,
+        };
     }
 }
