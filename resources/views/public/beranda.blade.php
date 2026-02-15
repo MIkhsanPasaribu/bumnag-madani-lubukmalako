@@ -5,11 +5,208 @@
 @section('meta_description', 'Website resmi BUMNag Madani Lubuk Malako - Badan Usaha Milik Nagari yang transparan dan profesional')
 
 @section('content')
-{{-- Hero Section --}}
-<section class="bg-gradient-to-br from-cream to-white py-12 md:py-20">
+{{-- Fullscreen Hero Section --}}
+@if(isset($heroSlides) && $heroSlides->count() > 0)
+<section class="relative w-full h-screen overflow-hidden" 
+    x-data="{
+        current: 0,
+        total: {{ $heroSlides->count() }},
+        playing: true,
+        timer: null,
+        
+        init() {
+            this.start();
+        },
+        
+        start() {
+            this.playing = true;
+            this.timer = setInterval(() => this.next(), 6000);
+        },
+        
+        stop() {
+            this.playing = false;
+            if (this.timer) { clearInterval(this.timer); this.timer = null; }
+        },
+        
+        toggle() {
+            this.playing ? this.stop() : this.start();
+        },
+        
+        next() {
+            this.current = (this.current + 1) % this.total;
+        },
+        
+        prev() {
+            this.current = (this.current - 1 + this.total) % this.total;
+        },
+        
+        go(i) {
+            this.current = i;
+            if (this.playing) { this.stop(); this.start(); }
+        }
+    }"
+>
+    {{-- Slides --}}
+    @foreach($heroSlides as $index => $slide)
+    <div x-show="current === {{ $index }}"
+         x-transition:enter="transition ease-out duration-1000"
+         x-transition:enter-start="opacity-0 scale-105"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-700"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="absolute inset-0 w-full h-full">
+        
+        {{-- Fallback Background (warna resmi BUMNag) --}}
+        <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#1a3a1a] via-[#2d5a2d] to-[#86ae5f]"></div>
+        
+        {{-- Background Media --}}
+        @if($slide->is_video)
+            <video autoplay loop muted playsinline
+                   class="absolute inset-0 w-full h-full object-cover"
+                   x-ref="video{{ $index }}">
+                <source src="{{ $slide->media_url }}" type="video/mp4">
+            </video>
+        @else
+            @php
+                $mediaExists = $slide->media_path && file_exists(public_path('uploads/hero/' . $slide->media_path));
+            @endphp
+            @if($mediaExists)
+            <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+                 style="background-image: url('{{ $slide->media_url }}');">
+            </div>
+            @endif
+        @endif
+        
+        {{-- Gradient Overlay (cream) --}}
+        <div class="absolute inset-0 bg-gradient-to-t from-[#fffaed]/70 via-[#fffaed]/30 to-[#fffaed]/10"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#fffaed]/50 via-transparent to-transparent"></div>
+    </div>
+    @endforeach
+
+    {{-- Content Overlay --}}
+    <div class="relative z-10 h-full flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            @foreach($heroSlides as $index => $slide)
+            <div x-show="current === {{ $index }}" x-cloak
+                 x-transition:enter="transition ease-out duration-700 delay-300"
+                 x-transition:enter-start="opacity-0 translate-y-8"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="flex items-center justify-between gap-8 w-full">
+                
+                {{-- Text Content --}}
+                <div class="max-w-2xl">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight drop-shadow-lg" style="-webkit-text-stroke: 2.5px rgba(0,0,0,0.7); paint-order: stroke fill;">
+                        {{ $slide->judul }}
+                    </h1>
+                    
+                    @if($slide->subjudul)
+                    <p class="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-xl leading-relaxed drop-shadow-md" style="-webkit-text-stroke: 1px rgba(0,0,0,0.6); paint-order: stroke fill;">
+                        {{ $slide->subjudul }}
+                    </p>
+                    @endif
+                    
+                    @if($slide->teks_tombol && $slide->url_tombol)
+                    <a href="{{ $slide->url_tombol }}" 
+                       class="inline-flex items-center px-6 py-3 md:px-8 md:py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm md:text-base">
+                        {{ $slide->teks_tombol }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                    @endif
+                </div>
+
+                {{-- Logo (jika diaktifkan) --}}
+                @if($slide->tampilkan_logo)
+                <div class="hidden md:flex items-center justify-center flex-shrink-0">
+                    <img src="{{ $logoUrl }}" 
+                         alt="Logo BUMNag Madani" 
+                         class="w-40 lg:w-56 xl:w-64 h-auto drop-shadow-2xl opacity-90">
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- Navigation Arrows --}}
+    @if($heroSlides->count() > 1)
+    <div class="absolute inset-0 z-20 pointer-events-none">
+        <div class="h-full flex items-center justify-between px-3 sm:px-6">
+            <button @click="prev()" 
+                    class="pointer-events-auto bg-white/10 hover:bg-white/25 backdrop-blur-sm text-white p-2.5 sm:p-3 rounded-full transition-all duration-300 opacity-0 hover:opacity-100 focus:opacity-100 group-hover:opacity-100"
+                    style="opacity: 0.5;"
+                    aria-label="Slide sebelumnya">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="next()" 
+                    class="pointer-events-auto bg-white/10 hover:bg-white/25 backdrop-blur-sm text-white p-2.5 sm:p-3 rounded-full transition-all duration-300 opacity-0 hover:opacity-100 focus:opacity-100 group-hover:opacity-100"
+                    style="opacity: 0.5;"
+                    aria-label="Slide selanjutnya">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    @endif
+
+    {{-- Bottom Controls --}}
+    <div class="absolute bottom-0 left-0 right-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 md:pb-12 flex items-center justify-between">
+            {{-- Indicators --}}
+            @if($heroSlides->count() > 1)
+            <div class="flex items-center gap-2">
+                @foreach($heroSlides as $index => $slide)
+                <button @click="go({{ $index }})"
+                        :class="current === {{ $index }} ? 'w-8 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/60'"
+                        class="h-2.5 rounded-full transition-all duration-500"
+                        aria-label="Ke slide {{ $index + 1 }}">
+                </button>
+                @endforeach
+            </div>
+            @else
+            <div></div>
+            @endif
+
+            {{-- Autoplay Toggle --}}
+            @if($heroSlides->count() > 1)
+            <button @click="toggle()" 
+                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-2 rounded-full transition-all"
+                    aria-label="Toggle autoplay">
+                <svg x-show="playing" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg x-show="!playing" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </button>
+            @endif
+        </div>
+    </div>
+
+    {{-- Scroll Down Indicator --}}
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 animate-bounce hidden md:block">
+        <a href="#content-start" class="text-white/60 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </a>
+    </div>
+</section>
+<div id="content-start"></div>
+@else
+{{-- Fallback Hero Section (tanpa slides) --}}
+<section class="bg-gradient-to-br from-cream to-white py-12 md:py-20 pattern-leaf">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {{-- Text Content --}}
             <div class="text-center lg:text-left">
                 <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                     Selamat Datang di<br>
@@ -33,8 +230,6 @@
                     </a>
                 </div>
             </div>
-            
-            {{-- Hero Image/Logo --}}
             <div class="flex justify-center lg:justify-end">
                 <div class="relative">
                     <div class="absolute inset-0 bg-primary/20 rounded-full blur-3xl transform scale-150"></div>
@@ -44,10 +239,11 @@
         </div>
     </div>
 </section>
+@endif
 
 {{-- 1. LAPORAN TAHUNAN SECTION --}}
 @if($laporanTerbaru->count() > 0)
-<section class="py-12 md:py-16 bg-white">
+<section class="py-12 md:py-16 bg-white pattern-grain divider-wave-top">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
@@ -115,7 +311,7 @@
 @endif
 
 {{-- 2. STATISTIK SECTION --}}
-<section class="py-12 md:py-16 bg-gray-50">
+<section class="py-12 md:py-16 bg-gray-50 pattern-dots divider-wave-top">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
             <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">📊 Statistik Keuangan {{ $tahunIni }}</h2>
@@ -181,58 +377,148 @@
     </div>
 </section>
 
-{{-- 3. BERITA SECTION --}}
-<section class="py-12 md:py-16 bg-cream">
+{{-- 3. BERITA SECTION — Horizontal Auto-Scroll Carousel --}}
+<section class="py-12 md:py-16 bg-cream pattern-leaf divider-wave-top">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        {{-- Header --}}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">📰 Berita Terbaru</h2>
-                <p class="text-gray-600">Kabar terkini dari BUMNag Madani</p>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-1">📰 Berita & Informasi</h2>
+                <p class="text-gray-600">Kabar terkini dari BUMNag Madani Lubuk Malako</p>
             </div>
-            <a href="{{ route('berita.index') }}" class="btn-ghost text-primary">
-                Lihat Semua
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <a href="{{ route('berita.index') }}" class="inline-flex items-center gap-1.5 text-primary font-semibold hover:underline transition-colors">
+                Semua Berita
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
             </a>
         </div>
         
         @if($beritaTerbaru->count() > 0)
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($beritaTerbaru as $berita)
-                    <article class="bento-card group">
-                        @if($berita->gambar)
-                            <img src="{{ $berita->gambar_url }}" alt="{{ $berita->judul }}" class="w-full h-48 object-cover rounded-lg mb-4">
-                        @else
-                            <div class="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                        @endif
-                        
-                        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {{ ($berita->tanggal_kegiatan ?? $berita->tanggal_publikasi)?->format('d M Y') }}
-                        </div>
-                        
-                        <h3 class="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                            <a href="{{ route('berita.show', $berita->slug) }}">{{ $berita->judul }}</a>
-                        </h3>
-                        
-                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ $berita->ringkasan }}</p>
-                        
-                        <a href="{{ route('berita.show', $berita->slug) }}" class="inline-flex items-center text-primary font-medium text-sm hover:underline">
-                            Baca Selengkapnya
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
+        <div x-data="{
+            current: 0,
+            perPage: 4,
+            total: {{ $beritaTerbaru->count() }},
+            timer: null,
+            
+            get maxIndex() { return Math.max(0, this.total - this.perPage); },
+            
+            init() {
+                this.updatePerPage();
+                window.addEventListener('resize', () => this.updatePerPage());
+                this.startAuto();
+            },
+            
+            updatePerPage() {
+                if (window.innerWidth < 640) this.perPage = 1;
+                else if (window.innerWidth < 1024) this.perPage = 2;
+                else this.perPage = 4;
+                if (this.current > this.maxIndex) this.current = this.maxIndex;
+            },
+            
+            next() {
+                this.current = this.current >= this.maxIndex ? 0 : this.current + 1;
+            },
+            
+            prev() {
+                this.current = this.current <= 0 ? this.maxIndex : this.current - 1;
+            },
+            
+            startAuto() {
+                this.timer = setInterval(() => this.next(), 4000);
+            },
+            
+            stopAuto() {
+                if (this.timer) { clearInterval(this.timer); this.timer = null; }
+            },
+            
+            resetAuto() {
+                this.stopAuto();
+                this.startAuto();
+            }
+        }" 
+        @mouseenter="stopAuto()" 
+        @mouseleave="startAuto()"
+        class="relative">
+            
+            {{-- Carousel Container --}}
+            <div class="overflow-hidden rounded-xl">
+                <div class="flex transition-transform duration-500 ease-in-out"
+                     :style="'transform: translateX(-' + (current * (100 / perPage)) + '%)'">
+                    
+                    @foreach($beritaTerbaru as $berita)
+                    <div class="flex-shrink-0 px-2" :style="'width: ' + (100 / perPage) + '%'">
+                        <a href="{{ route('berita.show', $berita->slug) }}" class="block group">
+                            <article class="relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-72 sm:h-80">
+                                {{-- Background Image --}}
+                                @if($berita->gambar)
+                                    <img src="{{ $berita->gambar_url }}" 
+                                         alt="{{ $berita->judul }}" 
+                                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                @else
+                                    <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-primary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                @endif
+                                
+                                {{-- Gradient Overlay --}}
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                                
+                                {{-- Category Badge --}}
+                                @if($berita->kategori)
+                                <div class="absolute top-3 left-3">
+                                    <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm"
+                                          style="color: {{ $berita->kategori->warna }};">
+                                        <span class="w-1.5 h-1.5 rounded-full" style="background-color: {{ $berita->kategori->warna }};"></span>
+                                        {{ $berita->kategori->nama }}
+                                    </span>
+                                </div>
+                                @endif
+                                
+                                {{-- Content at Bottom --}}
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <h3 class="font-bold text-white text-sm sm:text-base leading-snug line-clamp-2 mb-2 group-hover:text-primary-light transition-colors" style="text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                                        {{ $berita->judul }}
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-xs text-white/80">
+                                        <span>{{ ($berita->tanggal_kegiatan ?? $berita->tanggal_publikasi)?->format('d M Y') }}</span>
+                                        <span>•</span>
+                                        <span>Berita</span>
+                                    </div>
+                                </div>
+                            </article>
                         </a>
-                    </article>
-                @endforeach
+                    </div>
+                    @endforeach
+                    
+                </div>
             </div>
+            
+            {{-- Navigation Arrows --}}
+            <button @click="prev(); resetAuto()" 
+                    class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 hover:text-primary hover:shadow-xl transition-all z-10 hidden sm:flex">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="next(); resetAuto()" 
+                    class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 hover:text-primary hover:shadow-xl transition-all z-10 hidden sm:flex">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            
+            {{-- Dot Indicators --}}
+            <div class="flex justify-center gap-2 mt-6">
+                <template x-for="i in (maxIndex + 1)" :key="i">
+                    <button @click="current = i - 1; resetAuto()"
+                            :class="current === (i - 1) ? 'w-8 bg-primary' : 'w-2 bg-gray-300 hover:bg-gray-400'"
+                            class="h-2 rounded-full transition-all duration-300"></button>
+                </template>
+            </div>
+        </div>
         @else
             <x-empty-state 
                 title="Belum ada berita"
@@ -245,7 +531,7 @@
 
 {{-- 4. GALERI SECTION - Auto Slider --}}
 @if($galeriFoto->count() > 0)
-<section class="py-12 md:py-16 bg-white">
+<section class="py-12 md:py-16 bg-white pattern-wave divider-wave-top">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
@@ -415,7 +701,7 @@
 @endif
 
 {{-- CTA Section --}}
-<section class="py-12 md:py-16 bg-primary">
+<section class="py-12 md:py-16 bg-primary pattern-diagonal divider-wave-top">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Transparansi Pengelolaan Keuangan</h2>
         <p class="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
