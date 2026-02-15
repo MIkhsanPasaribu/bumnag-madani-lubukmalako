@@ -44,7 +44,6 @@ Website resmi **Badan Usaha Milik Nagari Madani Lubuk Malako** - Menampilkan pro
 - **Kelola Laporan Keuangan** - CRUD transaksi kas dengan kategori
 - **Kelola Berita** - CRUD dengan rich editor, kategori, galeri, SEO
 - **Kelola Pengumuman** - CRUD dengan prioritas dan scheduled publishing
-- **Ekspor Data** - Excel export untuk laporan keuangan
 
 ## 🚀 Instalasi
 
@@ -106,7 +105,6 @@ php artisan serve
 ├── app/
 │   ├── Http/Controllers/     # Controller untuk public & admin
 │   ├── Models/               # Eloquent models
-│   └── Exports/              # Excel export classes
 ├── database/
 │   ├── migrations/           # Database migrations
 │   └── seeders/              # Data seeders
@@ -183,7 +181,6 @@ php artisan view:clear
 - Galeri gambar untuk berita
 - Scheduled publishing
 - SEO meta tags
-- Export laporan keuangan ke Excel
 
 ## 📄 License
 
