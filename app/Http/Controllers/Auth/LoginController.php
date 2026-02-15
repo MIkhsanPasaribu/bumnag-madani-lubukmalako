@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 /**
  * Controller untuk autentikasi admin
@@ -14,11 +17,13 @@ class LoginController extends Controller
     /**
      * Menampilkan form login
      */
-    public function showLoginForm()
+    public function showLoginForm(): View|RedirectResponse
     {
         // Redirect ke dashboard sesuai role jika sudah login
         if (Auth::check()) {
-            return redirect()->route(Auth::user()->getDashboardRoute());
+            /** @var User $user */
+            $user = Auth::user();
+            return redirect()->route($user->getDashboardRoute());
         }
         
         return view('auth.login');
@@ -27,7 +32,7 @@ class LoginController extends Controller
     /**
      * Proses login
      */
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -43,10 +48,12 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             
-            $dashboardRoute = Auth::user()->getDashboardRoute();
+            /** @var User $user */
+            $user = Auth::user();
+            $dashboardRoute = $user->getDashboardRoute();
             
             return redirect()->intended(route($dashboardRoute))
-                ->with('success', 'Selamat datang, ' . Auth::user()->name . '!');
+                ->with('success', 'Selamat datang, ' . $user->name . '!');
         }
         
         return back()
@@ -59,7 +66,7 @@ class LoginController extends Controller
     /**
      * Proses logout
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         
