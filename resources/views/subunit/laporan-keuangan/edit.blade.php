@@ -19,7 +19,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Bulan <span class="text-red-500">*</span></label>
                     <select name="bulan" class="form-input w-full rounded-lg border-gray-300 @error('bulan') border-red-500 @enderror" required>
                         @foreach(\App\Models\LaporanKeuangan::$namaBulan as $num => $nama)
-                            <option value="{{ $num }}" {{ old('bulan', $laporan->periode_bulan) == $num ? 'selected' : '' }}>{{ $nama }}</option>
+                            <option value="{{ $num }}" {{ old('bulan', $laporan->bulan) == $num ? 'selected' : '' }}>{{ $nama }}</option>
                         @endforeach
                     </select>
                     @error('bulan') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -29,7 +29,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun <span class="text-red-500">*</span></label>
                     <select name="tahun" class="form-input w-full rounded-lg border-gray-300 @error('tahun') border-red-500 @enderror" required>
                         @for($y = date('Y') + 1; $y >= 2020; $y--)
-                            <option value="{{ $y }}" {{ old('tahun', $laporan->periode_tahun) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            <option value="{{ $y }}" {{ old('tahun', $laporan->tahun) == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
                     </select>
                     @error('tahun') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
