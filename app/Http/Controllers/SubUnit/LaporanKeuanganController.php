@@ -3,21 +3,33 @@
 namespace App\Http\Controllers\SubUnit;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LaporanKeuanganRequest;
 use App\Models\LaporanKeuangan;
+use App\Models\User;
+use App\Policies\LaporanKeuanganPolicy;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 /**
  * Controller untuk Sub Unit Usaha mengelola laporan keuangan
- * Sub unit hanya bisa input/edit laporan milik sub unitnya sendiri
+ * 
+ * Sub unit bisa:
+ * - Melihat semua laporan milik sub unitnya
+ * - Input laporan baru (jika belum diinput oleh admin atau unit)
+ * - Edit/hapus laporan yang dibuat sendiri
+ * - Melihat info jika data sudah diinput oleh admin atau akun unit
  */
 class LaporanKeuanganController extends Controller
 {
     /**
      * Daftar laporan keuangan milik sub unit ini
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         $subUnit = $user->subUnitUsaha;
         $unit = $user->unitUsaha;
 
@@ -40,6 +52,10 @@ class LaporanKeuanganController extends Controller
         $tahunList = LaporanKeuangan::where('sub_unit_id', $subUnit->id)
             ->distinct()->pluck('tahun')->sortDesc()->values();
 
+        if (!$tahunList->contains(now()->year)) {
+            $tahunList->prepend(now()->year);
+        }
+
         // Rekap
         $rekapQuery = LaporanKeuangan::where('sub_unit_id', $subUnit->id)->tahun($tahun);
         if ($bulan) $rekapQuery->where('bulan', $bulan);
@@ -57,58 +73,68 @@ class LaporanKeuanganController extends Controller
 
     /**
      * Form input laporan keuangan
+     * Cek apakah data sudah diinput oleh admin atau unit
      */
-    public function create()
+    public function create(): View
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         $subUnit = $user->subUnitUsaha;
         $unit = $user->unitUsaha;
 
-        return view('subunit.laporan-keuangan.create', compact('unit', 'subUnit'));
+        $adminInputInfo = null;
+
+        return view('subunit.laporan-keuangan.create', compact('unit', 'subUnit', 'adminInputInfo'));
     }
 
     /**
      * Simpan laporan keuangan baru
      */
-    public function store(Request $request)
+    public function store(LaporanKeuanganRequest $request): RedirectResponse
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         $subUnit = $user->subUnitUsaha;
 
-        $validated = $request->validate([
-            'bulan' => 'required|integer|min:1|max:12',
-            'tahun' => 'required|integer|min:2020|max:2099',
-            'pendapatan' => 'required|numeric|min:0',
-            'pengeluaran' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:500',
-        ], [
-            'bulan.required' => 'Bulan wajib dipilih.',
-            'tahun.required' => 'Tahun wajib diisi.',
-            'pendapatan.required' => 'Pendapatan wajib diisi.',
-            'pengeluaran.required' => 'Pengeluaran wajib diisi.',
-        ]);
+        $bulan = (int) $request->validated('bulan');
+        $tahun = (int) $request->validated('tahun');
 
-        // Cek duplikat
-        $exists = LaporanKeuangan::where('sub_unit_id', $subUnit->id)
-            ->where('bulan', $validated['bulan'])
-            ->where('tahun', $validated['tahun'])
-            ->exists();
+        // Cek duplikat dengan info siapa yang sudah menginput
+        $existing = LaporanKeuangan::findExistingReport(
+            $user->unit_id,
+            $subUnit->id,
+            $bulan,
+            $tahun
+        );
 
-        if ($exists) {
-            $namaBulan = LaporanKeuangan::$namaBulan[$validated['bulan']] ?? $validated['bulan'];
+        if ($existing) {
+            $periode = LaporanKeuangan::$namaBulan[$bulan] . ' ' . $tahun;
+            $creatorInfo = $existing->creator_info
+                ? "Data sudah diinputkan oleh {$existing->creator_info}."
+                : 'Silakan edit laporan yang ada.';
+
+            // Pesan khusus jika diinput oleh admin atau unit
+            if ($existing->createdBy) {
+                if ($existing->createdBy->isAdminLevel()) {
+                    $creatorInfo = "Data sudah diinputkan oleh Admin ({$existing->createdBy->name}). Hubungi Admin jika perlu perubahan.";
+                } elseif ($existing->createdBy->isUnit()) {
+                    $creatorInfo = "Data sudah diinputkan oleh akun Unit ({$existing->createdBy->name}). Hubungi Unit untuk perubahan.";
+                }
+            }
+
             return back()->withInput()->withErrors([
-                'bulan' => "Laporan {$namaBulan} {$validated['tahun']} sudah ada untuk {$subUnit->nama}."
+                'bulan' => "Laporan {$periode} sudah ada untuk {$subUnit->nama}. {$creatorInfo}"
             ]);
         }
 
         LaporanKeuangan::create([
             'unit_id' => $user->unit_id,
             'sub_unit_id' => $subUnit->id,
-            'bulan' => $validated['bulan'],
-            'tahun' => $validated['tahun'],
-            'pendapatan' => $validated['pendapatan'],
-            'pengeluaran' => $validated['pengeluaran'],
-            'keterangan' => $validated['keterangan'],
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'pendapatan' => $request->validated('pendapatan'),
+            'pengeluaran' => $request->validated('pengeluaran'),
+            'keterangan' => $request->validated('keterangan'),
             'created_by' => $user->id,
             'updated_by' => $user->id,
         ]);
@@ -120,12 +146,20 @@ class LaporanKeuanganController extends Controller
     /**
      * Form edit laporan keuangan
      */
-    public function edit(LaporanKeuangan $laporan_keuangan)
+    public function edit(LaporanKeuangan $laporan_keuangan): View
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
 
-        if ($laporan_keuangan->sub_unit_id !== $user->sub_unit_id) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit laporan ini.');
+        if (!$user->can('update', $laporan_keuangan)) {
+            $message = 'Anda tidak memiliki akses untuk mengedit laporan ini.';
+
+            if (LaporanKeuanganPolicy::isInputByHigherRole($user, $laporan_keuangan)) {
+                $creatorInfo = LaporanKeuanganPolicy::getInputByMessage($laporan_keuangan);
+                $message = "Laporan ini {$creatorInfo}. Hubungi pihak terkait untuk perubahan.";
+            }
+
+            abort(403, $message);
         }
 
         $subUnit = $user->subUnitUsaha;
@@ -141,42 +175,40 @@ class LaporanKeuanganController extends Controller
     /**
      * Update laporan keuangan
      */
-    public function update(Request $request, LaporanKeuangan $laporan_keuangan)
+    public function update(LaporanKeuanganRequest $request, LaporanKeuangan $laporan_keuangan): RedirectResponse
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
 
-        if ($laporan_keuangan->sub_unit_id !== $user->sub_unit_id) {
+        if (!$user->can('update', $laporan_keuangan)) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit laporan ini.');
         }
 
-        $validated = $request->validate([
-            'bulan' => 'required|integer|min:1|max:12',
-            'tahun' => 'required|integer|min:2020|max:2099',
-            'pendapatan' => 'required|numeric|min:0',
-            'pengeluaran' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:500',
-        ]);
+        $bulan = (int) $request->validated('bulan');
+        $tahun = (int) $request->validated('tahun');
 
-        // Cek duplikat (kecuali diri sendiri)
-        $exists = LaporanKeuangan::where('sub_unit_id', $user->sub_unit_id)
-            ->where('bulan', $validated['bulan'])
-            ->where('tahun', $validated['tahun'])
-            ->where('id', '!=', $laporan_keuangan->id)
-            ->exists();
+        // Cek duplikat (kecuali diri sendiri) 
+        $existing = LaporanKeuangan::findExistingReport(
+            $user->unit_id,
+            $user->sub_unit_id,
+            $bulan,
+            $tahun,
+            $laporan_keuangan->id
+        );
 
-        if ($exists) {
-            $namaBulan = LaporanKeuangan::$namaBulan[$validated['bulan']] ?? $validated['bulan'];
+        if ($existing) {
+            $periode = LaporanKeuangan::$namaBulan[$bulan] . ' ' . $tahun;
             return back()->withInput()->withErrors([
-                'bulan' => "Laporan {$namaBulan} {$validated['tahun']} sudah ada."
+                'bulan' => "Laporan {$periode} sudah ada."
             ]);
         }
 
         $laporan_keuangan->update([
-            'bulan' => $validated['bulan'],
-            'tahun' => $validated['tahun'],
-            'pendapatan' => $validated['pendapatan'],
-            'pengeluaran' => $validated['pengeluaran'],
-            'keterangan' => $validated['keterangan'],
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'pendapatan' => $request->validated('pendapatan'),
+            'pengeluaran' => $request->validated('pengeluaran'),
+            'keterangan' => $request->validated('keterangan'),
             'updated_by' => $user->id,
         ]);
 
@@ -187,12 +219,20 @@ class LaporanKeuanganController extends Controller
     /**
      * Hapus laporan keuangan
      */
-    public function destroy(LaporanKeuangan $laporan_keuangan)
+    public function destroy(LaporanKeuangan $laporan_keuangan): RedirectResponse
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
 
-        if ($laporan_keuangan->sub_unit_id !== $user->sub_unit_id) {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus laporan ini.');
+        if (!$user->can('delete', $laporan_keuangan)) {
+            $message = 'Anda tidak memiliki akses untuk menghapus laporan ini.';
+
+            if (LaporanKeuanganPolicy::isInputByHigherRole($user, $laporan_keuangan)) {
+                $creatorInfo = LaporanKeuanganPolicy::getInputByMessage($laporan_keuangan);
+                $message = "Laporan ini {$creatorInfo}. Hubungi pihak terkait untuk menghapus.";
+            }
+
+            abort(403, $message);
         }
 
         $laporan_keuangan->delete();
