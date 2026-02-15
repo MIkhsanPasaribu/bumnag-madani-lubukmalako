@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LaporanKeuangan;
 use App\Models\UnitUsaha;
-use App\Exports\LaporanKeuanganExport;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Controller untuk halaman transparansi keuangan publik
@@ -156,40 +154,6 @@ class TransparansiController extends Controller
         return $pdf->download('laporan_keuangan_' . $tahun . '_' . strtolower(str_replace(' ', '_', $unit->nama)) . '.pdf');
     }
 
-    /**
-     * Download Excel per bulan
-     */
-    public function downloadExcel(int $bulan, int $tahun)
-    {
-        $filename = 'Laporan_Keuangan_' . LaporanKeuangan::$namaBulan[$bulan] . '_' . $tahun . '.xlsx';
-
-        return Excel::download(new LaporanKeuanganExport($bulan, $tahun), $filename);
-    }
-
-    /**
-     * Download Excel per tahun
-     */
-    public function downloadExcelTahunan(int $tahun)
-    {
-        set_time_limit(300);
-        ini_set('memory_limit', '512M');
-
-        return Excel::download(new LaporanKeuanganExport(null, $tahun), 'Laporan_Keuangan_Tahun_' . $tahun . '.xlsx');
-    }
-
-    /**
-     * Download Excel per unit
-     */
-    public function downloadExcelUnit(int $tahun, int $unitId)
-    {
-        set_time_limit(300);
-        ini_set('memory_limit', '512M');
-
-        $unit = UnitUsaha::findOrFail($unitId);
-        $filename = 'Laporan_Keuangan_' . $tahun . '_' . str_replace(' ', '_', $unit->nama) . '.xlsx';
-
-        return Excel::download(new LaporanKeuanganExport(null, $tahun, $unitId), $filename);
-    }
 
     /**
      * Helper: build rekap per unit dari collection
