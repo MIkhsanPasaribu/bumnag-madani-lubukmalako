@@ -5,7 +5,7 @@
 @section('meta_description', 'Transparansi laporan keuangan BUMNag Madani Lubuk Malako. Lihat dan download laporan keuangan publik.')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pattern-grain">
     
     {{-- Header with Gradient --}}
     <div class="relative bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 md:p-8 mb-8 overflow-hidden">
@@ -176,14 +176,6 @@
                                 </svg>
                                 PDF
                             </a>
-                            <a href="{{ route('transparansi.excel.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}"
-                               class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-                               title="Download Excel">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Excel
-                            </a>
                         </div>
                     </div>
                 @endforeach
@@ -243,37 +235,6 @@
                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
                                 <span class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <p class="font-medium">{{ $rekapUnit['unit']->nama }}</p>
-                                    <p class="text-xs text-gray-500">Unit usaha {{ $tahunFilter }}</p>
-                                </div>
-                            </a>
-                        @endforeach
-                        
-                        {{-- Excel Section --}}
-                        <div class="px-3 py-2 border-t border-b border-gray-100 mt-1">
-                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Excel</p>
-                        </div>
-                        <a href="{{ route('transparansi.excel.tahunan', ['tahun' => $tahunFilter]) }}" 
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
-                            <span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </span>
-                            <div>
-                                <p class="font-medium">Per Tahun {{ $tahunFilter }}</p>
-                                <p class="text-xs text-gray-500">Semua bulan di {{ $tahunFilter }}</p>
-                            </div>
-                        </a>
-                        @foreach($rekapPerUnit as $rekapUnit)
-                            <a href="{{ route('transparansi.excel.unit', ['tahun' => $tahunFilter, 'unit' => $rekapUnit['unit']->id]) }}" 
-                               class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
-                                <span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
                                 </span>
@@ -359,12 +320,6 @@
                                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Download PDF">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </a>
-                                        <a href="{{ route('transparansi.excel', ['bulan' => $rekap['bulan'], 'tahun' => $rekap['tahun']]) }}" 
-                                           class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download Excel">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </a>
                                     </div>
@@ -454,12 +409,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </a>
-                                <a href="{{ route('transparansi.excel', ['bulan' => $rekap['bulan'], 'tahun' => $rekap['tahun']]) }}" 
-                                   class="p-2 text-green-600 bg-green-50 rounded-lg" title="Excel">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -517,7 +466,7 @@
                 <p class="text-sm text-gray-600">
                     Halaman ini menampilkan laporan keuangan BUMNag Madani Lubuk Malako secara terbuka kepada publik.
                     Anda dapat melihat rekap pendapatan, pengeluaran, dan laba/rugi per bulan maupun per unit usaha,
-                    serta mengunduh laporan dalam format PDF atau Excel untuk setiap periode.
+                    serta mengunduh laporan dalam format PDF untuk setiap periode.
                 </p>
             </div>
         </div>
