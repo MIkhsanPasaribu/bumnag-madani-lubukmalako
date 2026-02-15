@@ -76,9 +76,21 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($laporan as $i => $lap)
-                        <tr>
+                        @php
+                            $isFromHigherRole = \App\Policies\LaporanKeuanganPolicy::isInputByHigherRole(auth()->user(), $lap);
+                            $inputByMessage = $isFromHigherRole ? \App\Policies\LaporanKeuanganPolicy::getInputByMessage($lap) : null;
+                        @endphp
+                        <tr class="{{ $isFromHigherRole ? 'bg-blue-50/40' : '' }}">
                             <td class="px-4 py-3">{{ $laporan->firstItem() + $i }}</td>
-                            <td class="px-4 py-3 font-medium">{{ $lap->periode }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                {{ $lap->periode }}
+                                @if($isFromHigherRole)
+                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700" title="{{ $inputByMessage }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {{ $lap->createdBy?->isAdminLevel() ? 'Diinput Admin' : 'Diinput Unit' }}
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-right text-green-600">{{ number_format($lap->pendapatan, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right text-red-600">{{ number_format($lap->pengeluaran, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-semibold {{ $lap->laba_rugi >= 0 ? 'text-primary' : 'text-red-600' }}">
@@ -86,6 +98,9 @@
                             </td>
                             <td class="px-4 py-3 text-gray-500">{{ Str::limit($lap->keterangan, 40) }}</td>
                             <td class="px-4 py-3">
+                                @if($isFromHigherRole)
+                                    <span class="text-xs text-blue-600" title="{{ $inputByMessage }}">{{ $lap->createdBy?->isAdminLevel() ? 'Diinput Admin' : 'Diinput Unit' }}</span>
+                                @else
                                 <div class="flex items-center justify-center gap-2">
                                     <a href="{{ route('subunit.laporan-keuangan.edit', $lap) }}" class="text-primary hover:text-primary-dark" title="Edit">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -97,6 +112,7 @@
                                         </button>
                                     </form>
                                 </div>
+                                @endif
                             </td>
                         </tr>
                     @empty
