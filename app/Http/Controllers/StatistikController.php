@@ -86,30 +86,24 @@ class StatistikController extends Controller
         $unitChartData = [];
         $unitColors = ['#3b82f6', '#86ae5f', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
         foreach ($units as $i => $unit) {
-            $unitStats = LaporanKeuangan::getStatistikTahunan($tahunTerpilih);
-            $unitData = LaporanKeuangan::where('tahun', $tahunTerpilih)->where('unit_id', $unit->id)->get();
+            $unitStats = LaporanKeuangan::getStatistikPerUnit($tahunTerpilih, $unit->id);
             $unitChartData[] = [
                 'nama' => $unit->nama,
                 'warna' => $unitColors[$i % count($unitColors)],
-                'pendapatan' => (float) $unitData->sum('pendapatan'),
-                'pengeluaran' => (float) $unitData->sum('pengeluaran'),
+                'pendapatan' => $unitStats['total_pendapatan'],
+                'pengeluaran' => $unitStats['total_pengeluaran'],
             ];
         }
 
         // Data per unit untuk rekap tabel
         $rekapPerUnit = [];
         foreach ($units as $unit) {
+            $unitStatistik = LaporanKeuangan::getStatistikPerUnit($tahunTerpilih, $unit->id);
             $rekapPerUnit[] = [
                 'unit' => $unit,
                 'data' => LaporanKeuangan::getRekapTahunanPerUnit($tahunTerpilih, $unit->id),
-                'statistik' => [
-                    'total_pendapatan' => (float) LaporanKeuangan::tahun($tahunTerpilih)->unit($unit->id)->sum('pendapatan'),
-                    'total_pengeluaran' => (float) LaporanKeuangan::tahun($tahunTerpilih)->unit($unit->id)->sum('pengeluaran'),
-                ],
+                'statistik' => $unitStatistik,
             ];
-            $rekapPerUnit[count($rekapPerUnit) - 1]['statistik']['total_laba_rugi'] =
-                $rekapPerUnit[count($rekapPerUnit) - 1]['statistik']['total_pendapatan'] -
-                $rekapPerUnit[count($rekapPerUnit) - 1]['statistik']['total_pengeluaran'];
         }
 
         // Proporsi pendapatan vs pengeluaran
