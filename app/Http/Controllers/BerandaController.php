@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use App\Models\HeroSlide;
 use App\Models\LaporanTahunan;
 use App\Models\ProfilBumnag;
 use App\Models\LaporanKeuangan;
@@ -22,10 +23,14 @@ class BerandaController extends Controller
         // Profil BUMNag
         $profil = ProfilBumnag::getProfil();
         
-        // Berita terbaru (3 berita)
+        // Hero Slides aktif
+        $heroSlides = HeroSlide::aktif()->ordered()->get();
+        
+        // Berita terbaru (8 berita untuk carousel)
         $beritaTerbaru = Berita::published()
+            ->with('kategori')
             ->orderBy('tanggal_publikasi', 'desc')
-            ->take(3)
+            ->take(8)
             ->get();
         
         // Laporan Tahunan terbaru (4 laporan)
@@ -49,6 +54,7 @@ class BerandaController extends Controller
         
         return view('public.beranda', compact(
             'profil',
+            'heroSlides',
             'beritaTerbaru',
             'laporanTerbaru',
             'statistikKeuangan',
