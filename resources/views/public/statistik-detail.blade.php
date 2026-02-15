@@ -5,7 +5,7 @@
 @section('meta_description', 'Detail laporan keuangan BUMNag Madani Lubuk Malako periode ' . $rekap['periode'] . ' — rincian pendapatan dan pengeluaran per unit usaha.')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pattern-dots">
 
     {{-- Header with Gradient Background --}}
     <div class="relative bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 md:p-8 mb-8 overflow-hidden">
@@ -61,16 +61,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span class="hidden sm:inline">PDF</span>
-                    </a>
-
-                    {{-- Download Excel --}}
-                    <a href="{{ route('transparansi.excel', ['bulan' => $bulan, 'tahun' => $tahun]) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-primary hover:bg-gray-100 rounded-lg text-sm font-semibold transition-colors shadow-lg"
-                       title="Download Excel">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span class="hidden sm:inline">Excel</span>
                     </a>
                 </div>
             </div>
@@ -513,7 +503,7 @@
 @push('styles')
 <style>
     @media print {
-        nav, footer, .scroll-indicator, button[onclick="window.print()"], a[title="Share via WhatsApp"], a[title="Download PDF"], a[title="Download Excel"] {
+        nav, footer, .scroll-indicator, button[onclick="window.print()"], a[title="Share via WhatsApp"], a[title="Download PDF"] {
             display: none !important;
         }
         .bg-gradient-to-r {
