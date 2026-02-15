@@ -203,26 +203,30 @@
 </section>
 <div id="content-start"></div>
 @else
-{{-- Fallback Hero Section (tanpa slides) --}}
-<section class="bg-gradient-to-br from-cream to-white py-12 md:py-20 pattern-leaf">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div class="text-center lg:text-left">
-                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+{{-- Fallback Hero Section (tanpa slides) - desain statis default --}}
+<section class="relative w-full min-h-screen flex items-center bg-cream overflow-hidden">
+    {{-- Subtle pattern background --}}
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%2386ae5f&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20 md:py-0">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {{-- Konten Teks --}}
+            <div class="text-center lg:text-left order-2 lg:order-1">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                     Selamat Datang di<br>
                     <span class="text-primary">BUMNag Madani</span>
                 </h1>
-                <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
+                <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                     Badan Usaha Milik Nagari yang berkomitmen untuk mengembangkan ekonomi nagari dan meningkatkan kesejahteraan masyarakat Lubuk Malako.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="{{ route('profil') }}" class="btn-primary">
+                    <a href="{{ route('profil') }}" class="inline-flex items-center justify-center px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Tentang Kami
                     </a>
-                    <a href="{{ route('transparansi') }}" class="btn-outline">
+                    <a href="{{ route('transparansi') }}" class="inline-flex items-center justify-center px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold rounded-lg transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
@@ -230,15 +234,29 @@
                     </a>
                 </div>
             </div>
-            <div class="flex justify-center lg:justify-end">
+
+            {{-- Logo --}}
+            <div class="flex justify-center lg:justify-end order-1 lg:order-2">
                 <div class="relative">
-                    <div class="absolute inset-0 bg-primary/20 rounded-full blur-3xl transform scale-150"></div>
-                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani" class="relative w-64 md:w-80 lg:w-96 h-auto drop-shadow-2xl">
+                    {{-- Glow effect di belakang logo --}}
+                    <div class="absolute inset-0 bg-primary/10 rounded-full blur-3xl transform scale-150"></div>
+                    <img src="{{ $logoUrl }}" alt="Logo BUMNag Madani Lubuk Malako" 
+                         class="relative w-56 sm:w-64 md:w-80 lg:w-96 h-auto drop-shadow-2xl">
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Scroll Down Indicator --}}
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 animate-bounce hidden md:block">
+        <a href="#content-start" class="text-gray-400 hover:text-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </a>
+    </div>
 </section>
+<div id="content-start"></div>
 @endif
 
 {{-- 1. LAPORAN TAHUNAN SECTION --}}
