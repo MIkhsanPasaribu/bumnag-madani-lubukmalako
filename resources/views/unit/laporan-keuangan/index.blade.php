@@ -85,9 +85,21 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($laporan as $index => $lap)
-                        <tr class="hover:bg-gray-50">
+                        @php
+                            $isFromHigherRole = \App\Policies\LaporanKeuanganPolicy::isInputByHigherRole(auth()->user(), $lap);
+                            $inputByMessage = $isFromHigherRole ? \App\Policies\LaporanKeuanganPolicy::getInputByMessage($lap) : null;
+                        @endphp
+                        <tr class="hover:bg-gray-50 {{ $isFromHigherRole ? 'bg-blue-50/40' : '' }}">
                             <td class="px-4 py-3 text-gray-500">{{ $laporan->firstItem() + $index }}</td>
-                            <td class="px-4 py-3 font-medium">{{ $lap->periode }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                {{ $lap->periode }}
+                                @if($isFromHigherRole)
+                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700" title="{{ $inputByMessage }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        Diinput Admin
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3">{{ $lap->subUnit?->nama ?? '-' }}</td>
                             <td class="px-4 py-3 text-right text-green-600">{{ number_format($lap->pendapatan, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right text-red-600">{{ number_format($lap->pengeluaran, 0, ',', '.') }}</td>
@@ -96,7 +108,9 @@
                             </td>
                             <td class="px-4 py-3 text-gray-500 max-w-xs truncate">{{ $lap->keterangan ?? '-' }}</td>
                             <td class="px-4 py-3 text-center">
-                                @if($lap->sub_unit_id === null)
+                                @if($isFromHigherRole)
+                                    <span class="text-xs text-blue-600" title="{{ $inputByMessage }}">Diinput oleh Admin</span>
+                                @elseif($lap->sub_unit_id === null)
                                     {{-- Hanya laporan langsung unit yg bisa di-edit --}}
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('unit.laporan-keuangan.edit', $lap) }}" class="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-600" title="Edit">
