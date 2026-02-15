@@ -422,4 +422,146 @@
         overflow-x: auto;
         margin: 1rem 0;
     }
+
+    /* ============================================
+       DECORATIVE PATTERNS — BUMNag Agriculture Theme
+       Visible SVG patterns for public page sections
+       ============================================ */
+
+    /* Pattern 1: Leaf / Daun — Pertanian & Perkebunan */
+    .pattern-leaf {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 35c5-10 15-15 25-15-5 10-15 15-25 15z' fill='%2386ae5f' fill-opacity='0.12'/%3E%3Cpath d='M45 55c-5-10-15-15-25-15 5 10 15 15 25 15z' fill='%2386ae5f' fill-opacity='0.08'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern 2: Grain / Padi — Pertanian */
+    .pattern-grain {
+        background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cellipse cx='20' cy='20' rx='4' ry='10' transform='rotate(-30 20 20)' fill='%2386ae5f' fill-opacity='0.10'/%3E%3Cellipse cx='60' cy='50' rx='4' ry='10' transform='rotate(30 60 50)' fill='%2386ae5f' fill-opacity='0.08'/%3E%3Cellipse cx='40' cy='70' rx='3' ry='8' transform='rotate(-15 40 70)' fill='%2386ae5f' fill-opacity='0.09'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern 3: Wave / Gelombang — Jasa & Air */
+    .pattern-wave {
+        background-image: url("data:image/svg+xml,%3Csvg width='120' height='40' viewBox='0 0 120 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20c20-10 40 10 60 0s40 10 60 0' stroke='%2386ae5f' stroke-opacity='0.15' stroke-width='1.5' fill='none'/%3E%3Cpath d='M0 30c20-10 40 10 60 0s40 10 60 0' stroke='%2386ae5f' stroke-opacity='0.10' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern 4: Diagonal Lines — Garis dekoratif */
+    .pattern-diagonal {
+        background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0' stroke='%2386ae5f' stroke-opacity='0.12' stroke-width='1'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern 5: Dot Grid — Titik teratur */
+    .pattern-dots {
+        background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='%2386ae5f' fill-opacity='0.12'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern 6: Topography — Garis kontur tanah */
+    .pattern-topo {
+        background-image: url("data:image/svg+xml,%3Csvg width='200' height='100' viewBox='0 0 200 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 50c30-20 70 20 100 0s70 20 100 0' stroke='%2386ae5f' stroke-opacity='0.10' stroke-width='1.2' fill='none'/%3E%3Cpath d='M0 70c40-15 60 15 100 0s60 15 100 0' stroke='%2386ae5f' stroke-opacity='0.08' stroke-width='1' fill='none'/%3E%3Cpath d='M0 30c25-10 75 10 100 0s75 10 100 0' stroke='%2386ae5f' stroke-opacity='0.06' stroke-width='0.8' fill='none'/%3E%3C/svg%3E");
+    }
+
+    /* Pattern dengan warna secondary (merah BUMNag) */
+    .pattern-leaf-red {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 35c5-10 15-15 25-15-5 10-15 15-25 15z' fill='%23b71e42' fill-opacity='0.08'/%3E%3Cpath d='M45 55c-5-10-15-15-25-15 5 10 15 15 25 15z' fill='%23b71e42' fill-opacity='0.06'/%3E%3C/svg%3E");
+    }
+
+    .pattern-dots-red {
+        background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='%23b71e42' fill-opacity='0.10'/%3E%3C/svg%3E");
+    }
+
+    /* ============================================
+       SECTION DIVIDERS — Pembatas antar section
+       ============================================ */
+
+    /* Top wave divider */
+    .divider-wave-top {
+        position: relative;
+    }
+    .divider-wave-top::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            #86ae5f,
+            #a5c285,
+            #86ae5f,
+            transparent
+        );
+        opacity: 0.5;
+    }
+
+    /* Bottom wave divider */
+    .divider-wave-bottom {
+        position: relative;
+    }
+    .divider-wave-bottom::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            #86ae5f,
+            #a5c285,
+            #86ae5f,
+            transparent
+        );
+        opacity: 0.4;
+    }
+
+    /* Accent line — garis aksen kiri */
+    .accent-line-left {
+        position: relative;
+    }
+    .accent-line-left::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #86ae5f, #a5c285, transparent);
+        border-radius: 2px;
+    }
+
+    /* Corner decoration — di sudut section */
+    .corner-deco {
+        position: relative;
+        overflow: hidden;
+    }
+    .corner-deco::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #86ae5f 0%, transparent 70%);
+        opacity: 0.1;
+        pointer-events: none;
+    }
+    .corner-deco::after {
+        content: "";
+        position: absolute;
+        bottom: -30px;
+        left: -30px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #86ae5f 0%, transparent 70%);
+        opacity: 0.08;
+        pointer-events: none;
+    }
+
+    /* Footer pattern — pattern khusus footer */
+    .pattern-footer {
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 50c5-10 15-15 25-15-5 10-15 15-25 15z' fill='%2386ae5f' fill-opacity='0.10'/%3E%3Ccircle cx='70' cy='30' r='2.5' fill='%2386ae5f' fill-opacity='0.08'/%3E%3Ccircle cx='80' cy='80' r='2' fill='%2386ae5f' fill-opacity='0.06'/%3E%3C/svg%3E");
+    }
 }
