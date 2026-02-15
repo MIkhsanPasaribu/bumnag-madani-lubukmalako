@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\LaporanTahunanController as AdminLaporanTahunanCo
 use App\Http\Controllers\Admin\KategoriBeritaController;
 use App\Http\Controllers\Admin\LaporanKeuanganController;
 use App\Http\Controllers\Admin\GaleriBumnagController as AdminGaleriBumnagController;
+use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\Admin\KontakInfoController;
 use App\Http\Controllers\Admin\PesanKontakController;
@@ -55,9 +56,6 @@ Route::get('/transparansi', [TransparansiController::class, 'index'])->name('tra
 Route::get('/transparansi/download/{bulan}/{tahun}', [TransparansiController::class, 'downloadPdf'])->name('transparansi.download');
 Route::get('/transparansi/download-tahunan/{tahun}', [TransparansiController::class, 'downloadPdfTahunan'])->name('transparansi.download.tahunan');
 Route::get('/transparansi/download-unit/{tahun}/{unit}', [TransparansiController::class, 'downloadPdfUnit'])->name('transparansi.download.unit');
-Route::get('/transparansi/excel/{bulan}/{tahun}', [TransparansiController::class, 'downloadExcel'])->name('transparansi.excel');
-Route::get('/transparansi/excel-tahunan/{tahun}', [TransparansiController::class, 'downloadExcelTahunan'])->name('transparansi.excel.tahunan');
-Route::get('/transparansi/excel-unit/{tahun}/{unit}', [TransparansiController::class, 'downloadExcelUnit'])->name('transparansi.excel.unit');
 
 // Berita
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
@@ -142,10 +140,18 @@ Route::prefix('admin')->middleware(['auth', 'role.admin'])->name('admin.')->grou
     
     // CRUD Laporan Keuangan (per unit/sub-unit, bulanan)
     Route::get('/laporan-keuangan/export-pdf', [LaporanKeuanganController::class, 'exportPdf'])->name('laporan-keuangan.export-pdf');
-    Route::get('/laporan-keuangan/export-excel', [LaporanKeuanganController::class, 'exportExcel'])->name('laporan-keuangan.export-excel');
     Route::get('/laporan-keuangan/activity', [LaporanKeuanganController::class, 'activity'])->name('laporan-keuangan.activity');
     Route::get('/laporan-keuangan/sub-units/{unit}', [LaporanKeuanganController::class, 'getSubUnits'])->name('laporan-keuangan.sub-units');
     Route::resource('laporan-keuangan', LaporanKeuanganController::class);
+    
+    // CRUD Hero Slides
+    Route::post('/hero-slide/update-order', [HeroSlideController::class, 'updateOrder'])
+        ->name('hero-slide.update-order');
+    Route::post('/hero-slide/{hero_slide}/toggle-status', [HeroSlideController::class, 'toggleStatus'])
+        ->name('hero-slide.toggle-status');
+    Route::resource('hero-slide', HeroSlideController::class)->parameters([
+        'hero-slide' => 'hero_slide'
+    ]);
     
     // CRUD Galeri BUMNag
     Route::post('/galeri-bumnag/update-order', [AdminGaleriBumnagController::class, 'updateOrder'])
