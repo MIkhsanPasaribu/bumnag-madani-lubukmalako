@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\LaporanKeuangan;
 use App\Models\ProfilBumnag;
+use App\Policies\LaporanKeuanganPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register policies
+        Gate::policy(LaporanKeuangan::class, LaporanKeuanganPolicy::class);
+
         // Share logo URL globally to all views
         View::composer('*', function ($view) {
             if (!isset($view->getData()['logoUrl'])) {
