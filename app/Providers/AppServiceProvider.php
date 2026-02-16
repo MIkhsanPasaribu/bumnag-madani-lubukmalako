@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\ErrorLog;
 use App\Models\LaporanKeuangan;
 use App\Models\ProfilBumnag;
 use App\Policies\LaporanKeuanganPolicy;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -52,6 +54,23 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('logoUrl', $logoUrl);
                 $view->with('logoPath', $logoPath);
             }
+        });
+
+        // Share unread error count ke sidebar admin (hanya untuk super_admin)
+        View::composer('components.sidebar', function ($view) {
+            $unreadErrorCount = 0;
+            try {
+                if (Auth::check()) {
+                    /** @var \App\Models\User $user */
+                    $user = Auth::user();
+                    if ($user->isSuperAdmin()) {
+                        $unreadErrorCount = ErrorLog::unread()->count();
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Jangan error jika tabel belum ada
+            }
+            $view->with('unreadErrorCount', $unreadErrorCount);
         });
     }
 }
