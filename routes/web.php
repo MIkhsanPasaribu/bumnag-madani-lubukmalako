@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\Admin\KontakInfoController;
 use App\Http\Controllers\Admin\PesanKontakController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ErrorLogController;
 use App\Http\Controllers\Unit\DashboardController as UnitDashboardController;
 use App\Http\Controllers\Unit\LaporanKeuanganController as UnitLaporanKeuanganController;
 use App\Http\Controllers\SubUnit\DashboardController as SubUnitDashboardController;
@@ -185,6 +186,19 @@ Route::prefix('admin')->middleware(['auth', 'role.admin'])->name('admin.')->grou
     // Security Question Management
     Route::get('/pertanyaan-keamanan', [PasswordController::class, 'editSecurity'])->name('security.edit');
     Route::put('/pertanyaan-keamanan', [PasswordController::class, 'updateSecurity'])->name('security.update');
+});
+
+// ==========================================================================
+// SUPER ADMIN ROUTES (Error Logs - hanya super_admin)
+// ==========================================================================
+
+Route::prefix('admin')->middleware(['auth', 'role.superadmin'])->name('admin.')->group(function () {
+    // Error Logs
+    Route::get('/error-logs', [ErrorLogController::class, 'index'])->name('error-logs.index');
+    Route::get('/error-logs/{errorLog}', [ErrorLogController::class, 'show'])->name('error-logs.show');
+    Route::delete('/error-logs/{errorLog}', [ErrorLogController::class, 'destroy'])->name('error-logs.destroy');
+    Route::delete('/error-logs-all', [ErrorLogController::class, 'destroyAll'])->name('error-logs.destroy-all');
+    Route::post('/error-logs/tandai-dibaca', [ErrorLogController::class, 'markAllRead'])->name('error-logs.mark-read');
 });
 
 // ==========================================================================
