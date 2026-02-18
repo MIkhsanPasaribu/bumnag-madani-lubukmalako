@@ -26,7 +26,7 @@ class LaporanKeuanganRequest extends FormRequest
             'tahun' => 'required|integer|min:2020|max:2099',
             'pendapatan' => 'required|numeric|min:0|max:999999999999.99',
             'pengeluaran' => 'required|numeric|min:0|max:999999999999.99',
-            'keterangan' => 'nullable|string|max:1000',
+            'keterangan' => 'nullable|string|max:2000',
         ];
 
         // Admin perlu pilih unit dan sub unit
@@ -60,7 +60,7 @@ class LaporanKeuanganRequest extends FormRequest
             'pengeluaran.numeric' => 'Pengeluaran harus berupa angka.',
             'pengeluaran.min' => 'Pengeluaran tidak boleh negatif.',
             'pengeluaran.max' => 'Nominal pengeluaran terlalu besar.',
-            'keterangan.max' => 'Keterangan maksimal 1000 karakter.',
+            'keterangan.max' => 'Keterangan maksimal 2000 karakter.',
         ];
     }
 
