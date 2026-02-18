@@ -44,55 +44,127 @@
     
     {{-- Gallery Grid --}}
     @if($galeri->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            @foreach($galeri as $item)
-                <div class="group bento-card overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300" onclick="openLightbox({{ $loop->index }})">
-                    {{-- Image with Always-Visible Gradient Overlay --}}
-                    <div class="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-gray-100">
-                        <img 
-                            src="{{ $item->foto_url }}" 
-                            alt="{{ $item->judul }}"
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            loading="lazy"
-                        >
-                        
-                        {{-- Permanent Gradient Overlay (always visible) --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
-                            <div class="absolute bottom-0 left-0 right-0 p-4">
-                                <h3 class="font-bold text-white mb-1 line-clamp-2 drop-shadow-lg">{{ $item->judul }}</h3>
-                                @if($item->deskripsi)
-                                    <p class="text-sm text-white/90 line-clamp-2 drop-shadow-md">{{ $item->deskripsi }}</p>
-                                @endif
+        {{-- Alpine scope: kelola state lightbox (gambar aktif, navigasi) --}}
+        <div x-data="{
+                items: {{ Js::from($galeri->map(fn($item) => ['foto_url' => $item->foto_url, 'judul' => $item->judul, 'deskripsi' => $item->deskripsi ?? '', 'tanggal' => $item->created_at->format('d M Y')])->values()) }},
+                currentIndex: 0,
+                openLightbox(index) {
+                    this.currentIndex = index;
+                    $dispatch('open-modal-lightbox-galeri');
+                },
+                prev() { this.currentIndex = (this.currentIndex - 1 + this.items.length) % this.items.length; },
+                next() { this.currentIndex = (this.currentIndex + 1) % this.items.length; },
+                get current() { return this.items[this.currentIndex] || {}; }
+             }">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                @foreach($galeri as $item)
+                    <div class="group bento-card overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
+                         @click="openLightbox({{ $loop->index }})">
+                        {{-- Image with Always-Visible Gradient Overlay --}}
+                        <div class="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-gray-100">
+                            <img 
+                                src="{{ $item->foto_url }}" 
+                                alt="{{ $item->judul }}"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                loading="lazy"
+                            >
+                            
+                            {{-- Permanent Gradient Overlay (always visible) --}}
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <h3 class="font-bold text-white mb-1 line-clamp-2 drop-shadow-lg">{{ $item->judul }}</h3>
+                                    @if($item->deskripsi)
+                                        <p class="text-sm text-white/90 line-clamp-2 drop-shadow-md">{{ $item->deskripsi }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            {{-- Zoom Icon (only on hover) --}}
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                         
-                        {{-- Zoom Icon (only on hover) --}}
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
-                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        {{-- Info Card Footer --}}
+                        <div class="p-4 bg-white rounded-b-lg">
+                            <h3 class="font-bold text-gray-900 mb-1 line-clamp-2 text-sm">{{ $item->judul }}</h3>
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
+                                <span>{{ $item->created_at->format('d M Y') }}</span>
                             </div>
                         </div>
                     </div>
-                    
-                    {{-- Info Card Footer --}}
-                    <div class="p-4 bg-white rounded-b-lg">
-                        <h3 class="font-bold text-gray-900 mb-1 line-clamp-2 text-sm">{{ $item->judul }}</h3>
-                        <div class="flex items-center gap-2 text-xs text-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                @endforeach
+            </div>
+
+            {{-- Pagination --}}
+            <div class="mt-8">
+                {{ $galeri->links() }}
+            </div>
+
+            {{-- Lightbox Modal (Alpine x-modal) --}}
+            <x-modal name="lightbox-galeri" title="" maxWidth="2xl">
+                {{-- Body slot: Gambar + Navigasi + Info --}}
+                <div class="relative -mx-6 -mt-4">
+                    {{-- Gambar Utama --}}
+                    <div class="relative bg-black rounded-t-lg overflow-hidden">
+                        <img :src="current.foto_url" :alt="current.judul"
+                             class="w-full max-h-[60vh] object-contain mx-auto block">
+
+                        {{-- Tombol Prev --}}
+                        <button @click.stop="prev()"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
+                                aria-label="Foto sebelumnya">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                             </svg>
-                            <span>{{ $item->created_at->format('d M Y') }}</span>
-                        </div>
+                        </button>
+
+                        {{-- Tombol Next --}}
+                        <button @click.stop="next()"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
+                                aria-label="Foto berikutnya">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        {{-- Counter --}}
+                        <span class="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full"
+                              x-text="`${currentIndex + 1} / ${items.length}`"></span>
+                    </div>
+
+                    {{-- Info --}}
+                    <div class="px-6 py-4">
+                        <h3 class="font-bold text-gray-900 text-lg mb-1" x-text="current.judul"></h3>
+                        <p class="text-gray-600 text-sm leading-relaxed" x-show="current.deskripsi" x-text="current.deskripsi"></p>
+                        <p class="text-xs text-gray-400 mt-2" x-text="current.tanggal"></p>
                     </div>
                 </div>
-            @endforeach
-        </div>
 
-        {{-- Pagination --}}
-        <div class="mt-8">
-            {{ $galeri->links() }}
+                {{-- Footer slot: Navigasi keyboard hint --}}
+                <x-slot name="footer">
+                    <div class="flex items-center gap-4 text-xs text-gray-400 mr-auto">
+                        <span>← → Navigasi</span>
+                        <span>ESC Tutup</span>
+                    </div>
+                    <button @click="$dispatch('close-modal-lightbox-galeri')" class="btn-outline text-sm px-4 py-2">
+                        Tutup
+                    </button>
+                </x-slot>
+            </x-modal>
+
+            {{-- Keyboard navigation untuk lightbox --}}
+            <div @keydown.arrow-left.window="prev()"
+                 @keydown.arrow-right.window="next()">
+            </div>
         </div>
     @else
         {{-- Empty State --}}
@@ -106,177 +178,4 @@
     @endif
 </div>
 
-{{-- Lightbox Modal --}}
-<div 
-    id="lightbox" 
-    class="fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4"
-    onclick="if(event.target.id === 'lightbox') closeLightbox()"
->
-    {{-- Close Button --}}
-    <button 
-        onclick="event.stopPropagation(); closeLightbox()"
-        class="absolute top-4 right-4 text-white/80 hover:text-white transition z-20 bg-black/50 rounded-full p-2 backdrop-blur-sm"
-        aria-label="Close"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
-    
-    {{-- Previous Button --}}
-    <button 
-        onclick="event.stopPropagation(); prevImage()"
-        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white transition z-20 bg-black/50 rounded-full p-2 backdrop-blur-sm"
-        aria-label="Previous"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 sm:h-10 sm:w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-    </button>
-    
-    {{-- Next Button --}}
-    <button 
-        onclick="event.stopPropagation(); nextImage()"
-        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white transition z-20 bg-black/50 rounded-full p-2 backdrop-blur-sm"
-        aria-label="Next"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 sm:h-10 sm:w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-    </button>
-    
-    {{-- Content Container --}}
-    <div class="max-w-6xl w-full mx-auto" onclick="event.stopPropagation()">
-        {{-- Image --}}
-        <div class="relative">
-            <img 
-                id="lightbox-image" 
-                src="" 
-                alt=""
-                class="w-full h-auto max-h-[75vh] object-contain rounded-lg shadow-2xl mx-auto"
-            >
-            
-            {{-- Loading Spinner --}}
-            <div id="lightbox-loading" class="absolute inset-0 flex items-center justify-center hidden">
-                <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        </div>
-        
-        {{-- Info --}}
-        <div class="mt-6 text-center px-4">
-            <h3 id="lightbox-title" class="text-2xl font-bold text-white mb-3 drop-shadow-lg"></h3>
-            <p id="lightbox-description" class="text-base text-gray-200 max-w-3xl mx-auto leading-relaxed"></p>
-            <p id="lightbox-date" class="text-sm text-gray-400 mt-3"></p>
-            <div id="lightbox-counter" class="text-xs text-gray-500 mt-2"></div>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script>
-    // Get gallery data from Laravel  
-    const galeriData = {!! json_encode($galeri->map(function($item) {
-        return [
-            'foto_url' => $item->foto_url,
-            'judul' => $item->judul,
-            'deskripsi' => $item->deskripsi ?? '',
-            'tanggal' => $item->created_at->format('d M Y')
-        ];
-    })->values()) !!};
-    
-    let currentIndex = 0;
-
-    function openLightbox(index) {
-        if (!galeriData || galeriData.length === 0) {
-            console.error('No gallery data available');
-            return;
-        }
-        
-        currentIndex = index;
-        updateLightbox();
-        
-        const lightbox = document.getElementById('lightbox');
-        lightbox.classList.remove('hidden');
-        lightbox.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        lightbox.classList.add('hidden');
-        lightbox.classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    function prevImage() {
-        currentIndex = (currentIndex - 1 + galeriData.length) % galeriData.length;
-        updateLightbox();
-    }
-
-    function nextImage() {
-        currentIndex = (currentIndex + 1) % galeriData.length;
-        updateLightbox();
-    }
-
-    function updateLightbox() {
-        if (!galeriData[currentIndex]) {
-            console.error('Invalid index:', currentIndex);
-            return;
-        }
-        
-        const item = galeriData[currentIndex];
-        const lightboxImage = document.getElementById('lightbox-image');
-        const lightboxLoading = document.getElementById('lightbox-loading');
-        
-        // Show loading spinner
-        lightboxLoading.classList.remove('hidden');
-        
-        // Update image with loading handler
-        lightboxImage.onload = function() {
-            lightboxLoading.classList.add('hidden');
-        };
-        
-        lightboxImage.onerror = function() {
-            lightboxLoading.classList.add('hidden');
-            console.error('Failed to load image:', item.foto_url);
-        };
-        
-        lightboxImage.src = item.foto_url;
-        lightboxImage.alt = item.judul;
-        
-        // Update text content
-        document.getElementById('lightbox-title').textContent = item.judul || 'Tanpa Judul';
-        document.getElementById('lightbox-description').textContent = item.deskripsi || '';
-        document.getElementById('lightbox-date').textContent = item.tanggal || '';
-        document.getElementById('lightbox-counter').textContent = `${currentIndex + 1} / ${galeriData.length}`;
-    }
-
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-        const lightbox = document.getElementById('lightbox');
-        if (!lightbox.classList.contains('hidden')) {
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                prevImage();
-            }
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                nextImage();
-            }
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                closeLightbox();
-            }
-        }
-    });
-    
-    // Prevent background scrolling when lightbox is open
-    window.addEventListener('keydown', (e) => {
-        const lightbox = document.getElementById('lightbox');
-        if (!lightbox.classList.contains('hidden') && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ')) {
-            e.preventDefault();
-        }
-    });
-</script>
-@endpush
 @endsection
