@@ -28,11 +28,11 @@ class BeritaRequest extends FormRequest
         return [
             'judul' => ['required', 'string', 'max:255'],
             'konten' => ['required', 'string'],
-            'ringkasan' => ['nullable', 'string', 'max:500'],
+            'ringkasan' => ['nullable', 'string', 'max:1000'],
             'gambar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'lampiran' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:10240'], // Max 10MB
             'link_url' => ['nullable', 'url', 'max:500'],
-            'link_text' => ['nullable', 'string', 'max:100'],
+            'link_text' => ['nullable', 'string', 'max:200'],
             'status' => ['required', 'in:draft,published'],
             // Fitur baru
             'kategori_id' => ['nullable', 'exists:kategori_berita,id'],
@@ -60,7 +60,7 @@ class BeritaRequest extends FormRequest
             'judul.required' => 'Judul berita wajib diisi.',
             'judul.max' => 'Judul berita maksimal 255 karakter.',
             'konten.required' => 'Konten berita wajib diisi.',
-            'ringkasan.max' => 'Ringkasan maksimal 500 karakter.',
+            'ringkasan.max' => 'Ringkasan maksimal 1000 karakter.',
             'gambar.image' => 'File harus berupa gambar.',
             'gambar.mimes' => 'Format gambar harus: JPEG, PNG, JPG, atau WebP.',
             'gambar.max' => 'Ukuran gambar maksimal 2MB.',
@@ -69,7 +69,7 @@ class BeritaRequest extends FormRequest
             'lampiran.max' => 'Ukuran lampiran maksimal 10MB.',
             'link_url.url' => 'Format URL link tidak valid. Gunakan format lengkap (https://...).',
             'link_url.max' => 'URL link maksimal 500 karakter.',
-            'link_text.max' => 'Teks link maksimal 100 karakter.',
+            'link_text.max' => 'Teks link maksimal 200 karakter.',
             'status.required' => 'Status publikasi wajib dipilih.',
             'status.in' => 'Status tidak valid.',
             // Fitur baru
