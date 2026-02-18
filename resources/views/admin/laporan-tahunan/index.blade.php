@@ -20,7 +20,7 @@
 
 @section('content')
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div class="bento-card-flat flex items-center gap-3">
             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,6 +68,17 @@
                 <p class="text-xs text-gray-500 truncate">Total Download</p>
             </div>
         </div>
+        <a href="{{ route('admin.laporan-tahunan.index', ['archived' => '1']) }}" class="bento-card-flat flex items-center gap-3 hover:bg-gray-100 transition-colors">
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-2xl font-bold text-gray-600">{{ $totalArchived ?? 0 }}</p>
+                <p class="text-xs text-gray-500 truncate">Arsip</p>
+            </div>
+        </a>
     </div>
 
     {{-- Filters --}}
@@ -84,6 +95,10 @@
                         <option value="">Semua Status</option>
                         <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                         <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                    <select name="archived" class="form-input sm:flex-1">
+                        <option value="">Aktif</option>
+                        <option value="1" {{ request('archived') == '1' ? 'selected' : '' }}>Arsip</option>
                     </select>
                     <button type="submit" class="btn-primary justify-center sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -154,16 +169,20 @@
                                                 </button>
                                             </form>
                                             {{-- Force Delete Button --}}
-                                            <form action="{{ route('admin.laporan-tahunan.force-delete', $laporan->id) }}" method="POST" class="inline"
-                                                  onsubmit="return confirm('Yakin ingin menghapus permanen? File laporan juga akan dihapus.')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Hapus Laporan Permanen',
+                                                        message: 'Yakin ingin menghapus permanen laporan ini? File laporan dan cover juga akan dihapus. Aksi ini tidak dapat dibatalkan!',
+                                                        actionUrl: '{{ route('admin.laporan-tahunan.force-delete', $laporan->id) }}',
+                                                        method: 'DELETE',
+                                                        type: 'danger',
+                                                        confirmText: 'Hapus Permanen'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         @else
                                             {{-- Download Button --}}
                                             <a href="{{ $laporan->file_url }}" target="_blank"
@@ -179,17 +198,36 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </a>
-                                            {{-- Delete Button --}}
-                                            <form action="{{ route('admin.laporan-tahunan.destroy', $laporan) }}" method="POST" class="inline" 
-                                                  onsubmit="return confirm('Yakin ingin mengarsipkan laporan ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Arsipkan">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            {{-- Arsipkan Button --}}
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Arsipkan Laporan',
+                                                        message: 'Yakin ingin mengarsipkan laporan ini? Laporan dapat dipulihkan dari arsip.',
+                                                        actionUrl: '{{ route('admin.laporan-tahunan.destroy', $laporan) }}',
+                                                        method: 'DELETE',
+                                                        type: 'archive',
+                                                        confirmText: 'Arsipkan'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Arsipkan">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                </svg>
+                                            </button>
+                                            {{-- Hapus Permanen Button --}}
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Hapus Laporan Permanen',
+                                                        message: 'Yakin ingin menghapus laporan ini secara permanen? File laporan dan cover juga akan dihapus. Aksi ini tidak dapat dibatalkan!',
+                                                        actionUrl: '{{ route('admin.laporan-tahunan.force-delete', $laporan->id) }}',
+                                                        method: 'DELETE',
+                                                        type: 'danger',
+                                                        confirmText: 'Hapus Permanen'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -213,4 +251,7 @@
             actionText="Tambah Laporan"
         />
     @endif
+
+    {{-- Modal Konfirmasi --}}
+    <x-confirm-modal />
 @endsection
