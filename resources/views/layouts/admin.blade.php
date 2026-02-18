@@ -131,12 +131,8 @@
         </div>
     </div>
     
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
-    
-    {{-- jQuery (Required for Summernote) --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    {{-- jQuery (Required for Summernote) — defer agar tidak memblokir parsing HTML --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
     
     @stack('scripts')
 </body>
