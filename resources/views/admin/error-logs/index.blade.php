@@ -7,8 +7,8 @@
     @include('components.page-header', [
         'title' => 'Error Logs',
         'subtitle' => 'Monitor dan debug error aplikasi di production',
-        'breadcrumbs' => [
-            ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
+        'breadcrumb' => [
+            ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
             ['label' => 'Error Logs'],
         ]
     ])
@@ -255,9 +255,9 @@
         @else
             <div class="p-12 text-center">
                 @include('components.empty-state', [
-                    'icon' => '<svg class="w-16 h-16 text-gray-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                    'icon' => 'document',
                     'title' => 'Tidak Ada Error',
-                    'subtitle' => 'Belum ada error yang tercatat. Sistem berjalan dengan baik!',
+                    'description' => 'Belum ada error yang tercatat. Sistem berjalan dengan baik!',
                 ])
             </div>
         @endif
