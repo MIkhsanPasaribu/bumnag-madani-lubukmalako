@@ -38,7 +38,7 @@ class LaporanTahunanRequest extends FormRequest
                 Rule::unique('laporan_tahunan', 'tahun')->ignore($laporanId),
             ],
             'judul' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'deskripsi' => ['nullable', 'string', 'max:2000'],
             'cover_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'], // Max 5MB
             'status' => ['required', 'in:draft,published'],
             'tanggal_publikasi' => ['nullable', 'date'],
@@ -71,7 +71,7 @@ class LaporanTahunanRequest extends FormRequest
             'tahun.unique' => 'Laporan untuk tahun ini sudah ada. Silakan pilih tahun lain atau edit laporan yang ada.',
             'judul.required' => 'Judul laporan wajib diisi.',
             'judul.max' => 'Judul laporan maksimal 255 karakter.',
-            'deskripsi.max' => 'Deskripsi maksimal 1000 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 2000 karakter.',
             'cover_image.image' => 'Cover harus berupa gambar.',
             'cover_image.mimes' => 'Format cover harus: JPEG, JPG, PNG, atau WEBP.',
             'cover_image.max' => 'Ukuran cover maksimal 5MB.',
