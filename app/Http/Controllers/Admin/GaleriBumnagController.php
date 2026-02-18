@@ -192,16 +192,17 @@ class GaleriBumnagController extends Controller
     /**
      * Toggle status aktif/tidak aktif
      */
-    public function toggleStatus(GaleriBumnag $galeri_bumnag)
+    public function toggleStatus($id)
     {
         try {
+            $galeri_bumnag = GaleriBumnag::findOrFail($id);
             $newStatus = $galeri_bumnag->status === 'aktif' ? 'tidak_aktif' : 'aktif';
             $galeri_bumnag->update(['status' => $newStatus]);
             
             return response()->json([
                 'success' => true,
                 'status' => $newStatus,
-                'message' => 'Status berhasil diubah.',
+                'message' => 'Status foto berhasil diubah menjadi ' . ($newStatus === 'aktif' ? 'Aktif' : 'Tidak Aktif') . '.',
             ]);
             
         } catch (\Exception $e) {
@@ -209,6 +210,50 @@ class GaleriBumnagController extends Controller
                 'success' => false,
                 'message' => 'Gagal mengubah status: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Pulihkan foto yang diarsipkan (restore soft delete)
+     */
+    public function restore($id)
+    {
+        try {
+            $galeri = GaleriBumnag::onlyTrashed()->findOrFail($id);
+            $galeri->restore();
+
+            return redirect()
+                ->route('admin.galeri-bumnag.index')
+                ->with('success', 'Foto berhasil dipulihkan dari arsip.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal memulihkan foto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hapus foto secara permanen beserta file-nya
+     */
+    public function forceDestroy($id)
+    {
+        try {
+            $galeri = GaleriBumnag::withTrashed()->findOrFail($id);
+
+            // Hapus file foto dari disk
+            $this->deleteFile($galeri->foto, self::UPLOAD_FOLDER);
+
+            $galeri->forceDelete();
+
+            return redirect()
+                ->route('admin.galeri-bumnag.index')
+                ->with('success', 'Foto berhasil dihapus permanen.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menghapus foto: ' . $e->getMessage());
         }
     }
 
