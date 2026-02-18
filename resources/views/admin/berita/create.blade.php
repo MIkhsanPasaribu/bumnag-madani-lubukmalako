@@ -42,7 +42,7 @@
                 
                 <div class="space-y-5">
                     {{-- Judul --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('judul', '')) }} }">
                         <label for="judul" class="form-label">
                             Judul Berita <span class="text-red-500">*</span>
                         </label>
@@ -52,10 +52,15 @@
                                value="{{ old('judul') }}" 
                                class="form-input @error('judul') border-red-500 ring-red-500 @enderror" 
                                placeholder="Masukkan judul berita yang menarik"
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                required>
-                        @error('judul')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('judul')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
 
                     {{-- Kategori --}}
@@ -89,16 +94,21 @@
                     </div>
                     
                     {{-- Ringkasan --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('ringkasan', '')) }} }">
                         <label for="ringkasan" class="form-label">Ringkasan</label>
                         <textarea id="ringkasan" 
                                   name="ringkasan" 
                                   rows="2" 
+                                  maxlength="1000"
+                                  x-on:input="count = $el.value.length"
                                   class="form-input @error('ringkasan') border-red-500 ring-red-500 @enderror"
-                                  placeholder="Ringkasan singkat berita (opsional, maks 500 karakter)">{{ old('ringkasan') }}</textarea>
-                        <p class="text-xs text-gray-500 mt-1">Akan ditampilkan di daftar berita dan preview</p>
+                                  placeholder="Ringkasan singkat berita (opsional, maks 1000 karakter)">{{ old('ringkasan') }}</textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Akan ditampilkan di daftar berita dan preview</p>
+                            <p class="text-xs ml-2 flex-shrink-0 transition-colors" :class="count >= 900 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/1000'">0/1000</p>
+                        </div>
                         @error('ringkasan')
-                            <p class="form-error mt-1">{{ $message }}</p>
+                            <p class="form-error mt-0.5">{{ $message }}</p>
                         @enderror
                     </div>
                     
@@ -202,30 +212,40 @@
                 </h2>
                 
                 <div class="space-y-4">
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('link_url', '')) }} }">
                         <label for="link_url" class="form-label">URL Link</label>
                         <input type="url" 
                                id="link_url" 
                                name="link_url" 
                                value="{{ old('link_url') }}" 
                                class="form-input @error('link_url') border-red-500 ring-red-500 @enderror"
+                               maxlength="500"
+                               x-on:input="count = $el.value.length"
                                placeholder="https://contoh.com/sumber">
-                        @error('link_url')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('link_url')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 450 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/500'">0/500</p>
+                        </div>
                     </div>
                     
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('link_text', '')) }} }">
                         <label for="link_text" class="form-label">Teks Link</label>
                         <input type="text" 
                                id="link_text" 
                                name="link_text" 
                                value="{{ old('link_text') }}" 
                                class="form-input @error('link_text') border-red-500 ring-red-500 @enderror"
+                               maxlength="200"
+                               x-on:input="count = $el.value.length"
                                placeholder="Kunjungi sumber berita">
-                        <p class="text-xs text-gray-500 mt-1">Teks yang ditampilkan sebagai link. Kosongkan untuk menggunakan URL.</p>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Teks yang ditampilkan sebagai link. Kosongkan untuk menggunakan URL.</p>
+                            <p class="text-xs ml-2 flex-shrink-0 transition-colors" :class="count >= 180 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/200'">0/200</p>
+                        </div>
                         @error('link_text')
-                            <p class="form-error mt-1">{{ $message }}</p>
+                            <p class="form-error mt-0.5">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -246,7 +266,7 @@
                 </button>
                 
                 <div x-show="open" x-collapse class="mt-4 space-y-4">
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('meta_title', '')) }} }">
                         <label for="meta_title" class="form-label">Meta Title</label>
                         <input type="text" 
                                id="meta_title" 
@@ -254,29 +274,42 @@
                                value="{{ old('meta_title') }}" 
                                class="form-input" 
                                placeholder="Judul untuk mesin pencari (maks 70 karakter)"
-                               maxlength="70">
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan judul berita</p>
+                               maxlength="70"
+                               x-on:input="count = $el.value.length">
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Kosongkan untuk menggunakan judul berita</p>
+                            <p class="text-xs ml-2 flex-shrink-0 transition-colors" :class="count >= 60 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/70'">0/70</p>
+                        </div>
                     </div>
                     
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('meta_description', '')) }} }">
                         <label for="meta_description" class="form-label">Meta Description</label>
                         <textarea id="meta_description" 
                                   name="meta_description" 
                                   rows="2" 
                                   class="form-input"
                                   placeholder="Deskripsi untuk mesin pencari (maks 160 karakter)"
-                                  maxlength="160">{{ old('meta_description') }}</textarea>
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan ringkasan</p>
+                                  maxlength="160"
+                                  x-on:input="count = $el.value.length">{{ old('meta_description') }}</textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Kosongkan untuk menggunakan ringkasan</p>
+                            <p class="text-xs ml-2 flex-shrink-0 transition-colors" :class="count >= 145 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/160'">0/160</p>
+                        </div>
                     </div>
                     
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('meta_keywords', '')) }} }">
                         <label for="meta_keywords" class="form-label">Meta Keywords</label>
                         <input type="text" 
                                id="meta_keywords" 
                                name="meta_keywords" 
                                value="{{ old('meta_keywords') }}" 
                                class="form-input" 
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                placeholder="kata kunci, dipisah, koma">
+                        <div class="flex justify-end mt-1">
+                            <p class="text-xs flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
                 </div>
             </div>
