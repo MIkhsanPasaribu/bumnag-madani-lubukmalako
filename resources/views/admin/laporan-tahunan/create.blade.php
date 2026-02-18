@@ -76,7 +76,7 @@
                     </div>
                     
                     {{-- Judul --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('judul', '')) }} }">
                         <label for="judul" class="form-label">
                             Judul Laporan <span class="text-red-500">*</span>
                         </label>
@@ -86,23 +86,33 @@
                                value="{{ old('judul') }}" 
                                class="form-input @error('judul') border-red-500 ring-red-500 @enderror" 
                                placeholder="Contoh: Laporan Tahunan BUMNag Madani 2025"
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                required>
-                        @error('judul')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('judul')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
                     
                     {{-- Deskripsi --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('deskripsi', '')) }} }">
                         <label for="deskripsi" class="form-label">Deskripsi (Opsional)</label>
                         <textarea id="deskripsi" 
                                   name="deskripsi" 
                                   rows="3" 
                                   class="form-input @error('deskripsi') border-red-500 ring-red-500 @enderror"
-                                  placeholder="Deskripsi singkat tentang laporan ini (maks 1000 karakter)">{{ old('deskripsi') }}</textarea>
-                        @error('deskripsi')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                                  placeholder="Deskripsi singkat tentang laporan ini"
+                                  maxlength="2000"
+                                  x-on:input="count = $el.value.length">{{ old('deskripsi') }}</textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            @error('deskripsi')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 1800 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/2000'">0/2000</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -244,27 +254,35 @@
                 </button>
                 
                 <div x-show="open" x-collapse class="mt-4 space-y-4">
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('meta_title', '')) }} }">
                         <label for="meta_title" class="form-label">Meta Title</label>
                         <input type="text" 
                                id="meta_title" 
                                name="meta_title" 
                                value="{{ old('meta_title') }}" 
                                class="form-input" 
-                               placeholder="Judul untuk mesin pencari (maks 70 karakter)"
-                               maxlength="70">
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan judul laporan</p>
+                               placeholder="Judul untuk mesin pencari"
+                               maxlength="70"
+                               x-on:input="count = $el.value.length">
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Kosongkan untuk menggunakan judul laporan</p>
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 60 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/70'">0/70</p>
+                        </div>
                     </div>
                     
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('meta_description', '')) }} }">
                         <label for="meta_description" class="form-label">Meta Description</label>
                         <textarea id="meta_description" 
                                   name="meta_description" 
                                   rows="2" 
                                   class="form-input"
-                                  placeholder="Deskripsi untuk mesin pencari (maks 160 karakter)"
-                                  maxlength="160">{{ old('meta_description') }}</textarea>
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan deskripsi</p>
+                                  placeholder="Deskripsi untuk mesin pencari"
+                                  maxlength="160"
+                                  x-on:input="count = $el.value.length">{{ old('meta_description') }}</textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-xs text-gray-500">Kosongkan untuk menggunakan deskripsi</p>
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 145 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/160'">0/160</p>
+                        </div>
                     </div>
                 </div>
             </div>
