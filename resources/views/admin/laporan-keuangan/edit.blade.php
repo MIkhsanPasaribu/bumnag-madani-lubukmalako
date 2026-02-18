@@ -110,7 +110,7 @@
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">Rp</span>
                             <input type="number" name="pendapatan" id="pendapatan" 
-                                   value="{{ old('pendapatan', $laporan->pendapatan) }}"
+                                   x-model.number="pendapatan"
                                    min="0" step="1"
                                    class="form-input w-full pl-10 @error('pendapatan') border-red-500 @enderror" required>
                         </div>
@@ -127,13 +127,22 @@
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">Rp</span>
                             <input type="number" name="pengeluaran" id="pengeluaran" 
-                                   value="{{ old('pengeluaran', $laporan->pengeluaran) }}"
+                                   x-model.number="pengeluaran"
                                    min="0" step="1"
                                    class="form-input w-full pl-10 @error('pengeluaran') border-red-500 @enderror" required>
                         </div>
                         @error('pengeluaran')
                             <p class="form-error">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    {{-- Preview Laba/Rugi (reaktif via x-model di formLaporan) --}}
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <p class="text-sm text-gray-500 mb-1">Estimasi Laba/Rugi:</p>
+                        <p class="text-lg font-bold" 
+                           :class="(pendapatan - pengeluaran) >= 0 ? 'text-green-600' : 'text-red-600'"
+                           x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(Math.abs(pendapatan - pengeluaran))">
+                        </p>
                     </div>
 
                     {{-- Keterangan --}}
@@ -185,6 +194,8 @@ function formLaporan() {
         unitId: '{{ old('unit_id', $laporan->unit_id) }}',
         subUnitId: '{{ old('sub_unit_id', $laporan->sub_unit_id) }}',
         showSubUnit: false,
+        pendapatan: {{ (int) old('pendapatan', $laporan->pendapatan) }},
+        pengeluaran: {{ (int) old('pengeluaran', $laporan->pengeluaran) }},
 
         init() {
             this.checkSubUnit();

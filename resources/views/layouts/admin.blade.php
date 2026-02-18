@@ -131,8 +131,8 @@
         </div>
     </div>
     
-    {{-- jQuery (Required for Summernote) — defer agar tidak memblokir parsing HTML --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
+    {{-- jQuery (Required for Summernote) — harus tanpa defer agar tersedia sebelum Summernote JS --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     
     @stack('scripts')
 </body>
