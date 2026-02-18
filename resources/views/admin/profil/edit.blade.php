@@ -48,22 +48,34 @@
                     </div>
                     <div class="p-5">
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div>
+                            <div x-data="{ count: {{ mb_strlen(old('nama_bumnag', $profil->nama_bumnag ?? '')) }} }">
                                 <label for="nama_bumnag" class="form-label">Nama BUMNag <span class="text-red-500">*</span></label>
                                 <input type="text" id="nama_bumnag" name="nama_bumnag" 
                                        value="{{ old('nama_bumnag', $profil->nama_bumnag ?? '') }}" 
                                        class="form-input @error('nama_bumnag') border-red-500 @enderror" 
-                                       placeholder="Masukkan nama BUMNag" required>
-                                @error('nama_bumnag')<p class="form-error">{{ $message }}</p>@enderror
+                                       placeholder="Masukkan nama BUMNag"
+                                       maxlength="255"
+                                       x-on:input="count = $el.value.length"
+                                       required>
+                                <div class="flex justify-between items-center mt-1">
+                                    @error('nama_bumnag')<p class="form-error">{{ $message }}</p>@enderror
+                                    <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                                </div>
                             </div>
                             
-                            <div>
+                            <div x-data="{ count: {{ mb_strlen(old('nama_nagari', $profil->nama_nagari ?? '')) }} }">
                                 <label for="nama_nagari" class="form-label">Nama Nagari <span class="text-red-500">*</span></label>
                                 <input type="text" id="nama_nagari" name="nama_nagari" 
                                        value="{{ old('nama_nagari', $profil->nama_nagari ?? '') }}" 
                                        class="form-input @error('nama_nagari') border-red-500 @enderror" 
-                                       placeholder="Masukkan nama nagari" required>
-                                @error('nama_nagari')<p class="form-error">{{ $message }}</p>@enderror
+                                       placeholder="Masukkan nama nagari"
+                                       maxlength="255"
+                                       x-on:input="count = $el.value.length"
+                                       required>
+                                <div class="flex justify-between items-center mt-1">
+                                    @error('nama_nagari')<p class="form-error">{{ $message }}</p>@enderror
+                                    <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -85,16 +97,22 @@
                         </div>
                     </div>
                     <div class="p-5 space-y-4">
-                        <div>
+                        <div x-data="{ count: {{ mb_strlen(old('alamat', $profil->alamat ?? '')) }} }">
                             <label for="alamat" class="form-label">Alamat Lengkap <span class="text-red-500">*</span></label>
                             <textarea id="alamat" name="alamat" rows="2" 
                                       class="form-input @error('alamat') border-red-500 @enderror" 
-                                      placeholder="Masukkan alamat lengkap organisasi" required>{{ old('alamat', $profil->alamat ?? '') }}</textarea>
-                            @error('alamat')<p class="form-error">{{ $message }}</p>@enderror
+                                      placeholder="Masukkan alamat lengkap organisasi"
+                                      maxlength="1000"
+                                      x-on:input="count = $el.value.length"
+                                      required>{{ old('alamat', $profil->alamat ?? '') }}</textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                @error('alamat')<p class="form-error">{{ $message }}</p>@enderror
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 900 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/1000'">0/1000</p>
+                            </div>
                         </div>
                         
                         <div class="grid sm:grid-cols-3 gap-4">
-                            <div>
+                            <div x-data="{ count: {{ mb_strlen(old('telepon', $profil->telepon ?? '')) }} }">
                                 <label for="telepon" class="form-label">
                                     <span class="flex items-center gap-1.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,7 +123,10 @@
                                 </label>
                                 <input type="text" id="telepon" name="telepon" 
                                        value="{{ old('telepon', $profil->telepon ?? '') }}" 
-                                       class="form-input" placeholder="08xxx">
+                                       class="form-input" placeholder="08xxx"
+                                       maxlength="50"
+                                       x-on:input="count = $el.value.length">
+                                <p class="text-xs mt-1 transition-colors" :class="count >= 45 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/50'">0/50</p>
                             </div>
                             
                             <div>
@@ -159,18 +180,28 @@
                         </div>
                     </div>
                     <div class="p-5 space-y-4">
-                        <div>
+                        <div x-data="{ count: {{ mb_strlen(old('visi', $profil->visi ?? '')) }} }">
                             <label for="visi" class="form-label">Visi</label>
                             <textarea id="visi" name="visi" rows="3" class="form-input" 
-                                      placeholder="Masukkan visi organisasi">{{ old('visi', $profil->visi ?? '') }}</textarea>
-                            <p class="text-xs text-gray-400 mt-1">Gambaran masa depan yang ingin dicapai</p>
+                                      placeholder="Masukkan visi organisasi"
+                                      maxlength="5000"
+                                      x-on:input="count = $el.value.length">{{ old('visi', $profil->visi ?? '') }}</textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-xs text-gray-400">Gambaran masa depan yang ingin dicapai</p>
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 4500 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/5000'">0/5000</p>
+                            </div>
                         </div>
                         
-                        <div>
+                        <div x-data="{ count: {{ mb_strlen(old('misi', $profil->misi ?? '')) }} }">
                             <label for="misi" class="form-label">Misi</label>
                             <textarea id="misi" name="misi" rows="5" class="form-input" 
-                                      placeholder="Pisahkan setiap misi dengan baris baru">{{ old('misi', $profil->misi ?? '') }}</textarea>
-                            <p class="text-xs text-gray-400 mt-1">Tulis setiap poin misi di baris baru</p>
+                                      placeholder="Pisahkan setiap misi dengan baris baru"
+                                      maxlength="5000"
+                                      x-on:input="count = $el.value.length">{{ old('misi', $profil->misi ?? '') }}</textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-xs text-gray-400">Tulis setiap poin misi di baris baru</p>
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 4500 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/5000'">0/5000</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -190,9 +221,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5">
+                    <div class="p-5" x-data="{ count: {{ mb_strlen(old('sejarah', $profil->sejarah ?? '')) }} }">
                         <textarea id="sejarah" name="sejarah" rows="6" class="form-input" 
-                                  placeholder="Ceritakan sejarah dan perjalanan organisasi">{{ old('sejarah', $profil->sejarah ?? '') }}</textarea>
+                                  placeholder="Ceritakan sejarah dan perjalanan organisasi"
+                                  maxlength="10000"
+                                  x-on:input="count = $el.value.length">{{ old('sejarah', $profil->sejarah ?? '') }}</textarea>
+                        <p class="text-xs mt-1 transition-colors" :class="count >= 9000 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/10000'">0/10000</p>
                     </div>
                 </div>
                 
@@ -273,7 +307,7 @@
                                         </div>
                                         <div>
                                             <label class="form-label text-xs">Nama Lengkap <span class="text-red-500">*</span></label>
-                                            <input type="text" x-model="item.nama" :name="'struktur_organisasi['+index+'][nama]'" class="form-input text-sm" placeholder="Nama lengkap">
+                                            <input type="text" x-model="item.nama" :name="'struktur_organisasi['+index+'][nama]'" class="form-input text-sm" placeholder="Nama lengkap" maxlength="255">
                                         </div>
                                     </div>
                                     
