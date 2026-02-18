@@ -29,6 +29,11 @@
 }
 
 @layer base {
+    /* x-cloak: sembunyikan elemen Alpine.js sebelum inisialisasi selesai agar tidak flash */
+    [x-cloak] {
+        display: none !important;
+    }
+
     html {
         @apply scroll-smooth;
     }
