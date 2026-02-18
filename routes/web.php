@@ -157,8 +157,12 @@ Route::prefix('admin')->middleware(['auth', 'role.admin'])->name('admin.')->grou
     // CRUD Galeri BUMNag
     Route::post('/galeri-bumnag/update-order', [AdminGaleriBumnagController::class, 'updateOrder'])
         ->name('galeri-bumnag.update-order');
-    Route::post('/galeri-bumnag/{galeri_bumnag}/toggle-status', [AdminGaleriBumnagController::class, 'toggleStatus'])
+    Route::post('/galeri-bumnag/{id}/toggle-status', [AdminGaleriBumnagController::class, 'toggleStatus'])
         ->name('galeri-bumnag.toggle-status');
+    Route::post('/galeri-bumnag/{id}/restore', [AdminGaleriBumnagController::class, 'restore'])
+        ->name('galeri-bumnag.restore');
+    Route::delete('/galeri-bumnag/{id}/force-delete', [AdminGaleriBumnagController::class, 'forceDestroy'])
+        ->name('galeri-bumnag.force-delete');
     Route::resource('galeri-bumnag', AdminGaleriBumnagController::class)->parameters([
         'galeri-bumnag' => 'galeri_bumnag'
     ]);
