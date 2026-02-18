@@ -1,4 +1,4 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 
 @section('title', 'Profil BUMNag')
 
@@ -131,264 +131,404 @@
         </div>
     </div>
     
-    {{-- Struktur Organisasi - Neat Tree Style --}}
-    <div class="mt-16 overflow-x-auto pb-12">
+    {{-- Struktur Organisasi --}}
+    <div class="mt-16 pb-20">
+
         <div class="text-center mb-12">
             <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Struktur Badan Usaha Milik Nagari (BUMNag) Madani Lubuk Malako</h2>
-            <p class="text-gray-600">Pengurus BUMNag Madani Periode Aktif</p>
+            <p class="text-gray-500">Pengurus BUMNag Madani Periode Aktif</p>
         </div>
-        
+
         @php
             $strukturOrganisasi = $profil->getStrukturOrganisasiFormatted();
-            
-            // Group by category
-            $pimpinanNagari = collect($strukturOrganisasi)->filter(fn($a) => in_array($a['jabatan'], ['Bamus', 'Penasehat', 'Ketua KAN']));
-            $pengawas = collect($strukturOrganisasi)->filter(fn($a) => $a['jabatan'] === 'Pengawas');
-            $direktur = collect($strukturOrganisasi)->filter(fn($a) => $a['jabatan'] === 'Direktur')->first();
-            $sekretaris = collect($strukturOrganisasi)->filter(fn($a) => $a['jabatan'] === 'Sekretaris')->first();
-            $bendahara = collect($strukturOrganisasi)->filter(fn($a) => $a['jabatan'] === 'Bendahara')->first();
-            $kepalaUnit = collect($strukturOrganisasi)->filter(fn($a) => str_starts_with($a['jabatan'], 'Kepala Unit'));
-            $operasional = collect($strukturOrganisasi)->filter(fn($a) => in_array($a['jabatan'], ['Mandor Panen', 'Mandor Rawat', 'Staf']));
+            $pimpinanNagari = collect($strukturOrganisasi)->filter(fn($a) => in_array($a['jabatan'], ['Bamus', 'Penasehat', 'Ketua KAN']))->values();
+            $pengawas       = collect($strukturOrganisasi)->filter(fn($a) => $a['jabatan'] === 'Pengawas')->values();
+            $direktur       = collect($strukturOrganisasi)->firstWhere('jabatan', 'Direktur');
+            $sekretaris     = collect($strukturOrganisasi)->firstWhere('jabatan', 'Sekretaris');
+            $bendahara      = collect($strukturOrganisasi)->firstWhere('jabatan', 'Bendahara');
+            $kepalaUnit     = collect($strukturOrganisasi)->filter(fn($a) => str_starts_with($a['jabatan'], 'Kepala Unit'))->values();
+            $operasional    = collect($strukturOrganisasi)->filter(fn($a) => in_array($a['jabatan'], ['Mandor Panen', 'Mandor Rawat', 'Staf']))->values();
         @endphp
 
-        <div class="tf-tree tf-custom">
-            <ul>
-                <li>
-                    <div class="tf-nc-group">
-                        <span class="tf-nc-label">Pimpinan Nagari</span>
-                        <div class="flex gap-4 justify-center">
-                            @foreach($pimpinanNagari as $anggota)
-                                <div class="org-node org-node-top">
-                                    <div class="org-avatar">
-                                        @if(!empty($anggota['foto']))
-                                            <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
-                                        @else
-                                            <div class="org-avatar-placeholder">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="org-content">
-                                        <div class="org-name">{{ $anggota['nama'] }}</div>
-                                        <div class="org-role">{{ $anggota['jabatan'] }}</div>
-                                    </div>
+        {{-- ══ ZONA OPERASIONAL: Tiered row layout ══ --}}
+        <div class="org-tiers">
+
+            {{-- Tier 1: Direktur --}}
+            @if($direktur)
+            <div class="org-tier">
+                <div class="org-tier-label">Direktur</div>
+                <div class="org-tier-cards">
+                    <div class="org-card org-card--lg org-card--primary">
+                        <div class="org-card-photo">
+                            @if(!empty($direktur['foto']))
+                                <img src="{{ asset('uploads/struktur/' . $direktur['foto']) }}" alt="{{ $direktur['nama'] }}">
+                            @else
+                                <div class="org-card-placeholder org-card-placeholder--primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                 </div>
-                            @endforeach
+                            @endif
+                            <div class="org-card-overlay">
+                                <div class="org-card-name">{{ $direktur['nama'] }}</div>
+                                <div class="org-card-role org-card-role--primary">Direktur</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <ul>
-                        <li>
-                            <div class="tf-nc-group">
-                                <span class="tf-nc-label">Pengawas</span>
-                                <div class="flex gap-4 justify-center flex-wrap">
-                                    @foreach($pengawas as $anggota)
-                                        <div class="org-node org-node-sub" style="min-width: 140px;">
-                                            <div class="org-avatar sm">
-                                                @if(!empty($anggota['foto']))
-                                                    <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
-                                                @else
-                                                    <div class="org-avatar-placeholder">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            <div class="org-content">
-                                                <div class="org-name text-sm">{{ $anggota['nama'] }}</div>
-                                                <div class="org-role text-xs text-secondary font-semibold">Pengawas</div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- Tier connector --}}
+            @if($direktur && ($sekretaris || $bendahara))
+            <div class="org-tier-connector">
+                <div class="org-tier-connector-line"></div>
+                <svg class="org-tier-connector-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#86ae5f"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </div>
+            @endif
+
+            {{-- Tier 2: Sekretaris + Bendahara --}}
+            @if($sekretaris || $bendahara)
+            <div class="org-tier">
+                <div class="org-tier-label">Sekretariat &amp; Keuangan</div>
+                <div class="org-tier-cards">
+                    @if($sekretaris)
+                    <div class="org-card">
+                        <div class="org-card-photo">
+                            @if(!empty($sekretaris['foto']))
+                                <img src="{{ asset('uploads/struktur/' . $sekretaris['foto']) }}" alt="{{ $sekretaris['nama'] }}">
+                            @else
+                                <div class="org-card-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </div>
+                            @endif
+                            <div class="org-card-overlay">
+                                <div class="org-card-name">{{ $sekretaris['nama'] }}</div>
+                                <div class="org-card-role">Sekretaris</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    @if($bendahara)
+                    <div class="org-card">
+                        <div class="org-card-photo">
+                            @if(!empty($bendahara['foto']))
+                                <img src="{{ asset('uploads/struktur/' . $bendahara['foto']) }}" alt="{{ $bendahara['nama'] }}">
+                            @else
+                                <div class="org-card-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </div>
+                            @endif
+                            <div class="org-card-overlay">
+                                <div class="org-card-name">{{ $bendahara['nama'] }}</div>
+                                <div class="org-card-role">Bendahara</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            {{-- Tier connector --}}
+            @if($kepalaUnit->count() > 0)
+            <div class="org-tier-connector">
+                <div class="org-tier-connector-line"></div>
+                <svg class="org-tier-connector-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#86ae5f"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </div>
+
+            {{-- Tier 3: Kepala Unit --}}
+            <div class="org-tier">
+                <div class="org-tier-label">Kepala Unit</div>
+                <div class="org-tier-cards">
+                    @foreach($kepalaUnit as $anggota)
+                    <div class="org-card org-card--sm">
+                        <div class="org-card-photo">
+                            @if(!empty($anggota['foto']))
+                                <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
+                            @else
+                                <div class="org-card-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </div>
+                            @endif
+                            <div class="org-card-overlay">
+                                <div class="org-card-name">{{ $anggota['nama'] }}</div>
+                                <div class="org-card-role">{{ $anggota['jabatan'] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- Tier connector + Tier 4: Operasional --}}
+            @if($operasional->count() > 0)
+            <div class="org-tier-connector">
+                <div class="org-tier-connector-line org-tier-connector-line--dashed"></div>
+                <svg class="org-tier-connector-arrow org-tier-connector-arrow--gray" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#9ca3af"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="org-tier">
+                <div class="org-tier-label org-tier-label--gray">Operasional</div>
+                <div class="org-tier-cards">
+                    @foreach($operasional as $anggota)
+                    <div class="org-card org-card--sm org-card--gray">
+                        <div class="org-card-photo">
+                            @if(!empty($anggota['foto']))
+                                <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
+                            @else
+                                <div class="org-card-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </div>
+                            @endif
+                            <div class="org-card-overlay">
+                                <div class="org-card-name">{{ $anggota['nama'] }}</div>
+                                <div class="org-card-role">{{ $anggota['jabatan'] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+        </div>{{-- /.org-tiers --}}
+
+        {{-- ══ ZONA PENGAWASAN — di bawah, terpisah, tidak terhubung ══ --}}
+        @if($pimpinanNagari->count() > 0 || $pengawas->count() > 0)
+        <div class="mt-16">
+            <div class="flex items-center gap-3 mb-3 px-4 max-w-3xl mx-auto">
+                <div class="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-gray-500 bg-white border border-gray-300 whitespace-nowrap shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Pimpinan Nagari &amp; Badan Pengawas
+                </span>
+                <div class="flex-1 border-t-2 border-dashed border-gray-300"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto px-4">
+
+                @if($pimpinanNagari->count() > 0)
+                <div class="org-supervisory-panel">
+                    <div class="org-supervisory-title org-supervisory-title--green">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        Pimpinan Nagari
+                    </div>
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        @foreach($pimpinanNagari as $anggota)
+                        <div class="org-card org-card--sm">
+                            <div class="org-card-photo">
+                                @if(!empty($anggota['foto']))
+                                    <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
+                                @else
+                                    <div class="org-card-placeholder org-card-placeholder--green">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    </div>
+                                @endif
+                                <div class="org-card-overlay">
+                                    <div class="org-card-name">{{ $anggota['nama'] }}</div>
+                                    <div class="org-card-role">{{ $anggota['jabatan'] }}</div>
                                 </div>
                             </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
-                            <ul>
-                                @if($direktur)
-                                <li>
-                                    <div class="org-node org-node-director">
-                                        <div class="org-avatar large">
-                                            @if(!empty($direktur['foto']))
-                                                <img src="{{ asset('uploads/struktur/' . $direktur['foto']) }}" alt="{{ $direktur['nama'] }}">
-                                            @else
-                                                <div class="org-avatar-placeholder bg-primary">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div class="org-content">
-                                            <div class="org-name text-lg">{{ $direktur['nama'] }}</div>
-                                            <div class="org-role text-primary font-bold">Direktur</div>
-                                        </div>
+                @if($pengawas->count() > 0)
+                <div class="org-supervisory-panel org-supervisory-panel--red">
+                    <div class="org-supervisory-title org-supervisory-title--red">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        Pengawas
+                    </div>
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        @foreach($pengawas as $anggota)
+                        <div class="org-card org-card--sm">
+                            <div class="org-card-photo">
+                                @if(!empty($anggota['foto']))
+                                    <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
+                                @else
+                                    <div class="org-card-placeholder org-card-placeholder--red">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </div>
-
-                                    <ul>
-                                        @if($sekretaris || $bendahara)
-                                        <li>
-                                            <div class="tf-nc-wrapper">
-                                                <div class="flex gap-8 justify-center">
-                                                    @if($sekretaris)
-                                                    <div class="org-node">
-                                                        <div class="org-avatar">
-                                                            @if(!empty($sekretaris['foto']))
-                                                                <img src="{{ asset('uploads/struktur/' . $sekretaris['foto']) }}" alt="{{ $sekretaris['nama'] }}">
-                                                            @else
-                                                                <div class="org-avatar-placeholder">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                        <div class="org-content">
-                                                            <div class="org-name">{{ $sekretaris['nama'] }}</div>
-                                                            <div class="org-role">Sekretaris</div>
-                                                        </div>
-                                                    </div>
-                                                    @endif
-                                                    
-                                                    @if($bendahara)
-                                                    <div class="org-node">
-                                                        <div class="org-avatar">
-                                                            @if(!empty($bendahara['foto']))
-                                                                <img src="{{ asset('uploads/struktur/' . $bendahara['foto']) }}" alt="{{ $bendahara['nama'] }}">
-                                                            @else
-                                                                <div class="org-avatar-placeholder">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                        <div class="org-content">
-                                                            <div class="org-name">{{ $bendahara['nama'] }}</div>
-                                                            <div class="org-role">Bendahara</div>
-                                                        </div>
-                                                    </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-
-                                            <ul>
-                                                @if(count($kepalaUnit) > 0)
-                                                <li>
-                                                    <div class="flex gap-4 justify-center">
-                                                        @foreach($kepalaUnit as $anggota)
-                                                            <div class="org-node" style="min-width: 140px;">
-                                                                <div class="org-avatar sm">
-                                                                    @if(!empty($anggota['foto']))
-                                                                        <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
-                                                                    @else
-                                                                        <div class="org-avatar-placeholder">
-                                                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-                                                                <div class="org-content">
-                                                                    <div class="org-name text-sm">{{ $anggota['nama'] }}</div>
-                                                                    <div class="org-role text-xs text-primary">{{ $anggota['jabatan'] }}</div>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-
-                                                    <ul>
-                                                        @if(count($operasional) > 0)
-                                                        <li>
-                                                            <div class="flex gap-4 justify-center flex-wrap max-w-4xl mx-auto pt-6 border-t border-dashed border-gray-300 mt-6">
-                                                                @foreach($operasional as $anggota)
-                                                                    <div class="org-node" style="min-width: 160px;">
-                                                                        <div class="org-avatar sm">
-                                                                             @if(!empty($anggota['foto']))
-                                                                                <img src="{{ asset('uploads/struktur/' . $anggota['foto']) }}" alt="{{ $anggota['nama'] }}">
-                                                                            @else
-                                                                                <div class="org-avatar-placeholder">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                                </div>
-                                                                            @endif
-                                                                        </div>
-                                                                        <div class="org-content">
-                                                                            <div class="org-name text-sm">{{ $anggota['nama'] }}</div>
-                                                                            <div class="org-role text-xs text-primary font-semibold">{{ $anggota['jabatan'] }}</div>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                        </li>
-                                                        @endif
-                                                    </ul>
-                                                </li>
-                                                @endif
-                                            </ul>
-                                        </li>
-                                        @endif
-                                    </ul>
-                                </li>
                                 @endif
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+                                <div class="org-card-overlay">
+                                    <div class="org-card-name">{{ $anggota['nama'] }}</div>
+                                    <div class="org-card-role">Pengawas</div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+            </div>
         </div>
+        @endif
 
-        <style>
-            /* Treefoundry-like simplified CSS */
-            .tf-tree { text-align: center; font-size: 0; min-width: 100%; }
-            .tf-tree ul { display: inline-flex; padding: 0; margin: 0; list-style: none; position: relative; }
-            .tf-tree ul ul { display: flex; margin-top: 1.5rem; } /* Gap vertical */
-            .tf-tree li { position: relative; padding: 0 1rem; }
-            
-            /* The Lines */
-            .tf-tree ul ul::before {
-                content: ''; position: absolute; top: -1.5rem; left: 50%; width: 0; height: 1.5rem;
-                border-left: 2px solid #ccc;
-            }
-            .tf-tree li::before, .tf-tree li::after {
-                content: ''; position: absolute; top: -1.5rem; right: 50%; width: 50%; height: 1.5rem;
-                border-top: 2px solid #ccc;
-            }
-            .tf-tree li::after { right: auto; left: 50%; border-left: 2px solid #ccc; }
-            .tf-tree li:only-child::after, .tf-tree li:only-child::before { display: none; }
-            .tf-tree li:only-child { padding-top: 0; }
-            .tf-tree li:first-child::before, .tf-tree li:last-child::after { border: 0 none; }
-            .tf-tree li:last-child::before { border-right: 2px solid #ccc; border-radius: 0 5px 0 0; }
-            .tf-tree li:first-child::after { border-radius: 5px 0 0 0; }
-            
-            /* Node Styling */
-            .tf-custom .org-node {
-                display: inline-block;
-                background: white;
-                border: 1px solid #e5e7eb;
-                padding: 1rem;
-                border-radius: 12px;
-                width: 180px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                transition: all 0.2s;
-                position: relative;
-                z-index: 2;
-                font-size: 1rem;
-            }
-            .tf-custom .org-node:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); border-color: #86ae5f; }
-            
-            .tf-custom .org-node-top { background: linear-gradient(to bottom, #f0fdf4, #fff); border-color: #bbf7d0; }
-            .tf-custom .org-node-director { width: 220px; border-top: 3px solid #86ae5f; }
-            .tf-custom .org-node-sub { width: auto; min-width: 140px; padding: 0.75rem 1rem; }
-            
-            /* Avatars */
-            .org-avatar { width: 60px; height: 60px; margin: 0 auto 0.75rem; border-radius: 50%; overflow: hidden; border: 2px solid #f3f4f6; }
-            .org-avatar.large { width: 80px; height: 80px; border-color: #86ae5f; }
-            .org-avatar.sm { width: 48px; height: 48px; margin-bottom: 0.5rem; }
-            .org-avatar img { width: 100%; height: 100%; object-fit: cover; }
-            .org-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f9fafb; }
-            .org-avatar-placeholder svg { width: 60%; height: 60%; }
-            
-            /* Typography */
-            .org-name { font-weight: 700; color: #111827; line-height: 1.2; margin-bottom: 0.25rem; font-size: 0.95rem; }
-            .org-role { font-size: 0.8rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.025em; }
-            
-            .org-name-sm { font-weight: 600; font-size: 0.875rem; color: #1f2937; }
-            .org-role-sm { font-size: 0.7rem; color: #86ae5f; font-weight: 600; text-transform: uppercase; }
-
-            /* Group Labels */
-            .tf-nc-group { background: white; border: 1px dashed #d1d5db; padding: 1rem; border-radius: 16px; position: relative; }
-            .tf-nc-label { position: absolute; top: -0.75rem; left: 50%; transform: translateX(-50%); background: #f3f4f6; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid #e5e7eb; }
-        </style>
     </div>
+
+    <style>
+        /* ── Tiered layout wrapper ─────────────────────────────── */
+        .org-tiers {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        /* Each "row" tier */
+        .org-tier {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .org-tier-label {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: #166534;
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            border-radius: 999px;
+            padding: 0.18rem 0.9rem;
+            margin-bottom: 0.85rem;
+        }
+        .org-tier-label--gray { color: #374151; background: #f3f4f6; border-color: #e5e7eb; }
+
+        /* Cards row inside a tier */
+        .org-tier-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Connector between tiers */
+        .org-tier-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.25rem 0;
+        }
+        .org-tier-connector-line {
+            width: 2px;
+            height: 1.75rem;
+            background: #86ae5f;
+        }
+        .org-tier-connector-line--dashed {
+            background: none;
+            border-left: 2px dashed #d1d5db;
+        }
+        .org-tier-connector-arrow {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-top: -0.2rem;
+        }
+
+        /* ── Portrait Card ────────────────────────────────────── */
+        .org-card {
+            width: 140px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .org-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.14);
+        }
+        .org-card--lg  { width: 170px; }
+        .org-card--sm  { width: 115px; }
+        .org-card--primary { box-shadow: 0 8px 24px rgba(134,174,95,0.30); }
+        .org-card--primary:hover { box-shadow: 0 16px 36px rgba(134,174,95,0.40); }
+        .org-card--gray { opacity: 0.92; }
+
+        /* Photo 3:4 ratio */
+        .org-card-photo {
+            position: relative;
+            width: 100%;
+            padding-bottom: 130%;
+            background: #f3f4f6;
+            overflow: hidden;
+        }
+        .org-card-photo img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        /* Placeholder */
+        .org-card-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        }
+        .org-card-placeholder--primary { background: linear-gradient(135deg, #86ae5f 0%, #6b9a45 100%); }
+        .org-card-placeholder--green   { background: linear-gradient(135deg, #86ae5f 0%, #6b9a45 100%); }
+        .org-card-placeholder--red     { background: linear-gradient(135deg, #b71e42 0%, #8f1734 100%); }
+        .org-card-placeholder svg { width: 38%; height: 38%; opacity: 0.55; }
+        .org-card-placeholder--primary svg,
+        .org-card-placeholder--green svg,
+        .org-card-placeholder--red svg { opacity: 0.9; }
+
+        /* Overlay */
+        .org-card-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 1.5rem 0.55rem 0.6rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 55%, transparent 100%);
+        }
+        .org-card-name {
+            font-weight: 700;
+            font-size: 0.76rem;
+            color: #fff;
+            line-height: 1.25;
+            margin-bottom: 0.18rem;
+        }
+        .org-card-role {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.80);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .org-card-role--primary { color: #c5dfa6; }
+
+        /* ── Supervisory panels ──────────────────────────────── */
+        .org-supervisory-panel {
+            background: white;
+            border: 2px dashed #bbf7d0;
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .org-supervisory-panel--red { border-color: #fecaca; }
+
+        .org-supervisory-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 1.25rem;
+        }
+        .org-supervisory-title--green { color: #166534; }
+        .org-supervisory-title--red   { color: #991b1b; }
+    </style>
+
 </div>
 @endsection
