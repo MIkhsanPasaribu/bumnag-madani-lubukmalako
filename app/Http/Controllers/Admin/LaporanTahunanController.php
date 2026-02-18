@@ -91,14 +91,15 @@ class LaporanTahunanController extends Controller
         // Handle upload file laporan
         if ($request->hasFile('file_laporan')) {
             $file = $request->file('file_laporan');
+            // Ambil info file SEBELUM move (karena move() menghapus file temp)
+            $validated['file_original_name'] = $file->getClientOriginalName();
+            $validated['file_size'] = $file->getSize();
             
             $validated['file_laporan'] = $this->uploadFile(
                 $file,
                 self::UPLOAD_FOLDER,
                 'laporan-' . $validated['tahun']
             );
-            $validated['file_original_name'] = $file->getClientOriginalName();
-            $validated['file_size'] = $file->getSize();
         }
         
         // Set uploader
@@ -145,14 +146,16 @@ class LaporanTahunanController extends Controller
         if ($request->hasFile('file_laporan')) {
             $file = $request->file('file_laporan');
             
+            // Ambil info file SEBELUM move (karena move() menghapus file temp)
+            $validated['file_original_name'] = $file->getClientOriginalName();
+            $validated['file_size'] = $file->getSize();
+            
             $validated['file_laporan'] = $this->handleFileUpload(
                 $file,
                 $laporanTahunan->file_laporan,
                 self::UPLOAD_FOLDER,
                 'laporan-' . $validated['tahun']
             );
-            $validated['file_original_name'] = $file->getClientOriginalName();
-            $validated['file_size'] = $file->getSize();
         }
         
         // Handle tanggal publikasi
@@ -184,7 +187,7 @@ class LaporanTahunanController extends Controller
      */
     public function forceDestroy($id)
     {
-        $laporanTahunan = LaporanTahunan::onlyTrashed()->findOrFail($id);
+        $laporanTahunan = LaporanTahunan::withTrashed()->findOrFail($id);
         
         // Hapus cover image
         $this->deleteFile($laporanTahunan->cover_image, self::UPLOAD_FOLDER . '/covers');
