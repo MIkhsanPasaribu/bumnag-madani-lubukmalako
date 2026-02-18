@@ -173,28 +173,40 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('hubungi-kami.store') }}" method="POST" x-data="{ charCount: 0 }">
+                    <form action="{{ route('hubungi-kami.store') }}" method="POST">
                         @csrf
 
                         {{-- Nama Lengkap --}}
-                        <div class="mb-5">
+                        <div class="mb-5" x-data="{ count: {{ mb_strlen(old('nama', '')) }} }">
                             <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">
                                 Nama Lengkap <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="nama" name="nama" value="{{ old('nama') }}"
+                                   maxlength="255"
+                                   x-on:input="count = $el.value.length"
                                    class="form-input @error('nama') border-red-500 @enderror"
                                    placeholder="Masukkan Nama Lengkap Anda" required>
-                            @error('nama')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            <div class="flex justify-between items-center mt-1">
+                                @error('nama')<p class="text-red-500 text-xs">{{ $message }}</p>@enderror
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                                   :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                                   x-text="count + '/255'">0/255</p>
+                            </div>
                         </div>
 
                         {{-- Organisasi --}}
-                        <div class="mb-5">
+                        <div class="mb-5" x-data="{ count: {{ mb_strlen(old('organisasi', '')) }} }">
                             <label for="organisasi" class="block text-sm font-medium text-gray-700 mb-1">
                                 Organisasi / Instansi
                             </label>
                             <input type="text" id="organisasi" name="organisasi" value="{{ old('organisasi') }}"
+                                   maxlength="255"
+                                   x-on:input="count = $el.value.length"
                                    class="form-input"
                                    placeholder="Masukkan Nama Organisasi Anda">
+                            <p class="text-xs mt-1 transition-colors"
+                               :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                               x-text="count + '/255'">0/255</p>
                         </div>
 
                         {{-- Email --}}
@@ -209,28 +221,37 @@
                         </div>
 
                         {{-- Subjek --}}
-                        <div class="mb-5">
+                        <div class="mb-5" x-data="{ count: {{ mb_strlen(old('subjek', '')) }} }">
                             <label for="subjek" class="block text-sm font-medium text-gray-700 mb-1">
                                 Subjek <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="subjek" name="subjek" value="{{ old('subjek') }}"
+                                   maxlength="255"
+                                   x-on:input="count = $el.value.length"
                                    class="form-input @error('subjek') border-red-500 @enderror"
                                    placeholder="Masukkan Subjek" required>
-                            @error('subjek')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            <div class="flex justify-between items-center mt-1">
+                                @error('subjek')<p class="text-red-500 text-xs">{{ $message }}</p>@enderror
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                                   :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                                   x-text="count + '/255'">0/255</p>
+                            </div>
                         </div>
 
                         {{-- Pesan --}}
-                        <div class="mb-5">
+                        <div class="mb-5" x-data="{ count: {{ mb_strlen(old('pesan', '')) }} }">
                             <label for="pesan" class="block text-sm font-medium text-gray-700 mb-1">
                                 Pesan <span class="text-red-500">*</span>
                             </label>
-                            <textarea id="pesan" name="pesan" rows="5" maxlength="600"
-                                      x-on:input="charCount = $el.value.length"
+                            <textarea id="pesan" name="pesan" rows="5" maxlength="1500"
+                                      x-on:input="count = $el.value.length"
                                       class="form-input @error('pesan') border-red-500 @enderror"
-                                      placeholder="Masukkan Pesan Anda (Maksimal 600 Karakter)" required>{{ old('pesan') }}</textarea>
+                                      placeholder="Masukkan Pesan Anda" required>{{ old('pesan') }}</textarea>
                             <div class="flex justify-between items-center mt-1">
                                 @error('pesan')<p class="text-red-500 text-xs">{{ $message }}</p>@enderror
-                                <p class="text-xs text-gray-400 ml-auto" x-text="charCount + '/600'">0/600</p>
+                                <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                                   :class="count >= 1350 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                                   x-text="count + '/1500'">0/1500</p>
                             </div>
                         </div>
 
