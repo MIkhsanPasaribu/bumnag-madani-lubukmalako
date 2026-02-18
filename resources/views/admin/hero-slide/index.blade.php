@@ -82,6 +82,15 @@
 
     {{-- Content --}}
     @if($heroSlides->count() > 0)
+        {{-- Alpine scope untuk preview modal --}}
+        <div x-data="{
+                previewSlide: { media_url: '', judul: '', subjudul: '', is_video: false, status: '' },
+                openPreview(media_url, judul, subjudul, is_video, status) {
+                    this.previewSlide = { media_url, judul, subjudul, is_video, status };
+                    $dispatch('open-modal-preview-hero-slide');
+                }
+             }">
+
         {{-- Table --}}
         <div class="bento-card-flat overflow-hidden">
             <div class="overflow-x-auto">
@@ -148,6 +157,21 @@
                                 </td>
                                 <td class="px-4 py-4">
                                     <div class="flex justify-end gap-1">
+                                        {{-- Preview --}}
+                                        <button type="button"
+                                                @click="openPreview(
+                                                    '{{ addslashes($slide->media_url) }}',
+                                                    '{{ addslashes($slide->judul) }}',
+                                                    '{{ addslashes($slide->subjudul ?? '') }}',
+                                                    {{ $slide->is_video ? 'true' : 'false' }},
+                                                    '{{ $slide->status_label }}'
+                                                )"
+                                                class="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Preview">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
                                         {{-- Toggle Status --}}
                                         <form action="{{ route('admin.hero-slide.toggle-status', $slide) }}" method="POST" class="inline">
                                             @csrf
@@ -173,16 +197,19 @@
                                             </svg>
                                         </a>
                                         {{-- Delete --}}
-                                        <form action="{{ route('admin.hero-slide.destroy', $slide) }}" method="POST" class="inline"
-                                              onsubmit="return confirm('Yakin ingin menghapus slide ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button"
+                                                onclick="confirmAction({
+                                                    title: 'Hapus Hero Slide',
+                                                    message: 'Yakin ingin menghapus slide ini? File media juga akan dihapus. Aksi ini tidak dapat dibatalkan!',
+                                                    actionUrl: '{{ route('admin.hero-slide.destroy', $slide) }}',
+                                                    method: 'DELETE',
+                                                    type: 'danger'
+                                                })"
+                                                class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -196,6 +223,39 @@
         <div class="mt-6">
             {{ $heroSlides->links('components.pagination') }}
         </div>
+
+        {{-- Preview Modal --}}
+        <x-modal name="preview-hero-slide" title="Preview Slide" maxWidth="2xl">
+            <div class="-mx-6 -mt-4">
+                {{-- Media --}}
+                <div class="bg-gray-900 rounded-t-lg overflow-hidden">
+                    <template x-if="previewSlide.is_video">
+                        <video :src="previewSlide.media_url"
+                               class="w-full max-h-[55vh] object-contain mx-auto block"
+                               controls muted autoplay loop></video>
+                    </template>
+                    <template x-if="!previewSlide.is_video">
+                        <img :src="previewSlide.media_url" :alt="previewSlide.judul"
+                             class="w-full max-h-[55vh] object-contain mx-auto block">
+                    </template>
+                </div>
+                {{-- Info --}}
+                <div class="px-6 py-4 space-y-1">
+                    <h3 class="font-bold text-gray-900 text-lg" x-text="previewSlide.judul"></h3>
+                    <p class="text-gray-600 text-sm" x-show="previewSlide.subjudul" x-text="previewSlide.subjudul"></p>
+                    <span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full mt-1"
+                          :class="previewSlide.status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
+                          x-text="previewSlide.status"></span>
+                </div>
+            </div>
+            <x-slot name="footer">
+                <button @click="$dispatch('close-modal-preview-hero-slide')" class="btn-outline text-sm px-4 py-2">
+                    Tutup
+                </button>
+            </x-slot>
+        </x-modal>
+
+        </div>{{-- end Alpine scope --}}
     @else
         <x-empty-state 
             title="Belum ada hero slide"
@@ -205,4 +265,7 @@
             actionText="Tambah Slide"
         />
     @endif
+
+    {{-- Modal Konfirmasi --}}
+    <x-confirm-modal />
 @endsection
