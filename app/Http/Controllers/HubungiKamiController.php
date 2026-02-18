@@ -31,14 +31,14 @@ class HubungiKamiController extends Controller
             'organisasi' => 'nullable|string|max:255',
             'email' => 'required|email|max:255',
             'subjek' => 'required|string|max:255',
-            'pesan' => 'required|string|max:600',
+            'pesan' => 'required|string|max:1500',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'subjek.required' => 'Subjek wajib diisi.',
             'pesan.required' => 'Pesan wajib diisi.',
-            'pesan.max' => 'Pesan maksimal 600 karakter.',
+            'pesan.max' => 'Pesan maksimal 1500 karakter.',
         ]);
 
         PesanKontak::create($validated);
