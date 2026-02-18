@@ -24,16 +24,23 @@
 
                 <div class="space-y-6">
                     {{-- Nama Akun --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('name', '')) }} }">
                         <label for="name" class="form-label">
                             Nama Akun <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="name" name="name" value="{{ old('name') }}"
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                class="form-input w-full @error('name') border-red-500 @enderror"
                                placeholder="Contoh: Unit Jasa" required>
-                        @error('name')
-                            <p class="form-error">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('name')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                               :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                               x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
 
                     {{-- Email --}}
