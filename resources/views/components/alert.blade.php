@@ -44,7 +44,7 @@
     <div class="flex-1">
         @if($message)
             {{ $message }}
-        @else
+        @elseif(isset($slot) && !empty($slot))
             {{ $slot }}
         @endif
     </div>
