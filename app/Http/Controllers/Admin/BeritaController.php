@@ -123,13 +123,14 @@ class BeritaController extends Controller
             // Handle upload lampiran
             if ($request->hasFile('lampiran')) {
                 $lampiranFile = $request->file('lampiran');
+                // Ambil info file SEBELUM move (karena move() menghapus file temp)
+                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
+                $validated['lampiran_size'] = $lampiranFile->getSize();
                 $validated['lampiran'] = $this->uploadFile(
                     $lampiranFile,
                     self::LAMPIRAN_FOLDER,
                     $validated['judul'] . '-lampiran'
                 );
-                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
-                $validated['lampiran_size'] = $lampiranFile->getSize();
             }
             
             // Set penulis
@@ -202,14 +203,15 @@ class BeritaController extends Controller
             // Handle upload lampiran baru dengan auto-delete lampiran lama
             if ($request->hasFile('lampiran')) {
                 $lampiranFile = $request->file('lampiran');
+                // Ambil info file SEBELUM move (karena move() menghapus file temp)
+                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
+                $validated['lampiran_size'] = $lampiranFile->getSize();
                 $validated['lampiran'] = $this->handleFileUpload(
                     $lampiranFile,
                     $berita->lampiran,
                     self::LAMPIRAN_FOLDER,
                     $validated['judul'] . '-lampiran'
                 );
-                $validated['lampiran_original_name'] = $lampiranFile->getClientOriginalName();
-                $validated['lampiran_size'] = $lampiranFile->getSize();
             }
             
             // Handle hapus lampiran (jika checkbox hapus dicentang)
@@ -274,11 +276,12 @@ class BeritaController extends Controller
     }
 
     /**
-     * Menghapus berita secara permanen
+     * Menghapus berita secara permanen (baik aktif maupun yang sudah diarsipkan)
      */
     public function forceDestroy($id)
     {
-        $berita = Berita::onlyTrashed()->findOrFail($id);
+        // withTrashed() agar bisa menemukan berita aktif MAUPUN yang sudah diarsipkan
+        $berita = Berita::withTrashed()->findOrFail($id);
         
         // Hapus gambar utama
         $this->deleteFile($berita->gambar, self::UPLOAD_FOLDER);
