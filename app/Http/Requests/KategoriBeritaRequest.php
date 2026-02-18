@@ -32,12 +32,12 @@ class KategoriBeritaRequest extends FormRequest
             'nama' => [
                 'required',
                 'string',
-                'max:100',
+                'max:200',
                 Rule::unique('kategori_berita', 'nama')->ignore($kategoriId),
             ],
-            'deskripsi' => ['nullable', 'string', 'max:500'],
+            'deskripsi' => ['nullable', 'string', 'max:1000'],
             'warna' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'icon' => ['nullable', 'string', 'max:50'],
+            'icon' => ['nullable', 'string', 'max:100'],
             'is_active' => ['nullable', 'boolean'],
             'urutan' => ['nullable', 'integer', 'min:0'],
         ];
@@ -52,11 +52,11 @@ class KategoriBeritaRequest extends FormRequest
     {
         return [
             'nama.required' => 'Nama kategori wajib diisi.',
-            'nama.max' => 'Nama kategori maksimal 100 karakter.',
+            'nama.max' => 'Nama kategori maksimal 200 karakter.',
             'nama.unique' => 'Nama kategori sudah digunakan.',
-            'deskripsi.max' => 'Deskripsi maksimal 500 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 1000 karakter.',
             'warna.regex' => 'Format warna harus hexadecimal (contoh: #86ae5f).',
-            'icon.max' => 'Nama icon maksimal 50 karakter.',
+            'icon.max' => 'Nama icon maksimal 100 karakter.',
             'urutan.integer' => 'Urutan harus berupa angka.',
             'urutan.min' => 'Urutan minimal 0.',
         ];
