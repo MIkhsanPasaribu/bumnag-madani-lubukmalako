@@ -27,16 +27,16 @@ class KontakInfoController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'telepon' => 'nullable|string|max:30',
+            'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'alamat' => 'nullable|string|max:500',
-            'google_maps_embed' => 'nullable|string|max:1000',
+            'google_maps_embed' => 'nullable|string|max:2000',
             'facebook' => 'nullable|string|max:255',
             'instagram' => 'nullable|string|max:255',
             'youtube' => 'nullable|string|max:255',
             'tiktok' => 'nullable|string|max:255',
             'twitter' => 'nullable|string|max:255',
-            'whatsapp' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:50',
         ]);
 
         $kontak = KontakInfo::getInstance();
