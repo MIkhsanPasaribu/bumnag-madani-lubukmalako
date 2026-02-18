@@ -65,7 +65,7 @@ class PasswordController extends Controller
         $request->validate([
             'current_password' => ['required', 'current_password'],
             'security_question' => ['required', 'string', 'in:' . implode(',', array_keys(User::getSecurityQuestions()))],
-            'security_answer' => ['required', 'string', 'min:2', 'max:100'],
+            'security_answer' => ['required', 'string', 'min:2', 'max:200'],
         ], [
             'current_password.required' => 'Password wajib diisi untuk verifikasi.',
             'current_password.current_password' => 'Password tidak sesuai.',
@@ -73,7 +73,7 @@ class PasswordController extends Controller
             'security_question.in' => 'Pertanyaan keamanan tidak valid.',
             'security_answer.required' => 'Jawaban keamanan wajib diisi.',
             'security_answer.min' => 'Jawaban minimal 2 karakter.',
-            'security_answer.max' => 'Jawaban maksimal 100 karakter.',
+            'security_answer.max' => 'Jawaban maksimal 200 karakter.',
         ]);
 
         /** @var User $user */
