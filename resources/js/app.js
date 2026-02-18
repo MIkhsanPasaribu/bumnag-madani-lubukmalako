@@ -2,9 +2,31 @@ import "./bootstrap";
 import Alpine from "alpinejs";
 import Chart from "chart.js/auto";
 
-// Initialize Alpine.js
+// Initialize Alpine.js — pastikan DOM sudah tersedia sebelum Alpine.start()
 window.Alpine = Alpine;
-Alpine.start();
+
+// Gunakan DOMContentLoaded sebagai safety net agar Alpine menemukan semua elemen x-data
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => Alpine.start());
+} else {
+    // DOM sudah siap (bisa terjadi jika script di-cache)
+    Alpine.start();
+}
+
+/**
+ * Fungsi global untuk memicu confirm modal.
+ * Tidak bergantung pada Alpine scope — dispatch langsung ke window.
+ *
+ * @param {Object} detail - { title, message, actionUrl, method, type, confirmText }
+ */
+window.confirmAction = function (detail) {
+    window.dispatchEvent(
+        new CustomEvent("confirm-action", {
+            detail: detail,
+            bubbles: true,
+        }),
+    );
+};
 
 // Make Chart.js globally available
 window.Chart = Chart;
