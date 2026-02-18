@@ -238,16 +238,20 @@
                                                     </svg>
                                                 </button>
                                             </form>
-                                            <form action="{{ route('admin.berita.force-delete', $item->id) }}" method="POST" class="inline"
-                                                  onsubmit="return confirm('Yakin ingin menghapus berita ini secara permanen? Aksi ini tidak dapat dibatalkan!')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Hapus Berita Permanen',
+                                                        message: 'Yakin ingin menghapus berita ini secara permanen? Semua gambar dan lampiran juga akan dihapus. Aksi ini tidak dapat dibatalkan!',
+                                                        actionUrl: '{{ route('admin.berita.force-delete', $item->id) }}',
+                                                        method: 'DELETE',
+                                                        type: 'danger',
+                                                        confirmText: 'Hapus Permanen'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         @else
                                             {{-- Toggle Featured --}}
                                             <form action="{{ route('admin.berita.toggle-featured', $item) }}" method="POST" class="inline">
@@ -283,16 +287,36 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </a>
-                                            <form action="{{ route('admin.berita.destroy', $item) }}" method="POST" class="inline" 
-                                                  onsubmit="return confirm('Yakin ingin mengarsipkan berita ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Arsipkan">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            {{-- Arsipkan (Soft Delete) --}}
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Arsipkan Berita',
+                                                        message: 'Yakin ingin mengarsipkan berita ini? Berita dapat dipulihkan dari arsip.',
+                                                        actionUrl: '{{ route('admin.berita.destroy', $item) }}',
+                                                        method: 'DELETE',
+                                                        type: 'archive',
+                                                        confirmText: 'Arsipkan'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Arsipkan">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                </svg>
+                                            </button>
+                                            {{-- Hapus Permanen --}}
+                                            <button type="button"
+                                                    onclick="confirmAction({
+                                                        title: 'Hapus Berita Permanen',
+                                                        message: 'Yakin ingin menghapus berita ini secara permanen? Semua gambar dan lampiran juga akan dihapus. Aksi ini tidak dapat dibatalkan!',
+                                                        actionUrl: '{{ route('admin.berita.force-delete', $item->id) }}',
+                                                        method: 'DELETE',
+                                                        type: 'danger',
+                                                        confirmText: 'Hapus Permanen'
+                                                    })"
+                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Permanen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -316,4 +340,7 @@
             actionText="Tambah Berita"
         />
     @endif
+
+    {{-- Modal Konfirmasi --}}
+    <x-confirm-modal />
 @endsection
