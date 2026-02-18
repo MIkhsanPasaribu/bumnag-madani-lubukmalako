@@ -10,9 +10,11 @@ Website resmi **Badan Usaha Milik Nagari Madani Lubuk Malako** - Menampilkan pro
 
 | Teknologi    | Versi   |
 | ------------ | ------- |
-| PHP          | ^8.4    |
-| Laravel      | ^11.0   |
+| PHP          | ^8.2    |
+| Laravel      | ^12.0   |
 | MySQL        | 8.0+    |
+
+> **Last Deployed:** 19 Februari 2026 - Fix jQuery defer & reactive laba/rugi calculation
 | Tailwind CSS | ^3.4    |
 | Alpine.js    | ^3.14   |
 | Chart.js     | ^4.4    |
