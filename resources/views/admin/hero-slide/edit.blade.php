@@ -55,7 +55,7 @@
                 
                 <div class="space-y-5">
                     {{-- Judul --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('judul', $hero_slide->judul ?? '')) }} }">
                         <label for="judul" class="form-label">
                             Judul <span class="text-red-500">*</span>
                         </label>
@@ -65,23 +65,33 @@
                                value="{{ old('judul', $hero_slide->judul) }}" 
                                class="form-input @error('judul') border-red-500 ring-red-500 @enderror" 
                                placeholder="Contoh: Selamat Datang di BUMNag Madani"
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                required>
-                        @error('judul')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('judul')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
 
                     {{-- Subjudul --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('subjudul', $hero_slide->subjudul ?? '')) }} }">
                         <label for="subjudul" class="form-label">Subjudul</label>
                         <textarea id="subjudul" 
                                   name="subjudul" 
                                   rows="3" 
+                                  maxlength="1000"
+                                  x-on:input="count = $el.value.length"
                                   class="form-input @error('subjudul') border-red-500 ring-red-500 @enderror"
                                   placeholder="Deskripsi singkat yang tampil di bawah judul">{{ old('subjudul', $hero_slide->subjudul) }}</textarea>
-                        @error('subjudul')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('subjudul')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 900 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/1000'">0/1000</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,23 +178,33 @@
                 </h2>
                 
                 <div class="space-y-4">
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('teks_tombol', $hero_slide->teks_tombol ?? '')) }} }">
                         <label for="teks_tombol" class="form-label">Teks Tombol</label>
                         <input type="text" id="teks_tombol" name="teks_tombol" value="{{ old('teks_tombol', $hero_slide->teks_tombol) }}"
                                class="form-input @error('teks_tombol') border-red-500 ring-red-500 @enderror"
+                               maxlength="200"
+                               x-on:input="count = $el.value.length"
                                placeholder="Contoh: Tentang Kami">
-                        @error('teks_tombol')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('teks_tombol')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 180 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/200'">0/200</p>
+                        </div>
                     </div>
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('url_tombol', $hero_slide->url_tombol ?? '')) }} }">
                         <label for="url_tombol" class="form-label">URL Tombol</label>
                         <input type="text" id="url_tombol" name="url_tombol" value="{{ old('url_tombol', $hero_slide->url_tombol) }}"
                                class="form-input @error('url_tombol') border-red-500 ring-red-500 @enderror"
+                               maxlength="255"
+                               x-on:input="count = $el.value.length"
                                placeholder="Contoh: /profil atau https://...">
-                        @error('url_tombol')
-                            <p class="form-error mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="flex justify-between items-center mt-1">
+                            @error('url_tombol')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                        </div>
                     </div>
                 </div>
             </div>
