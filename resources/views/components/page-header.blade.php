@@ -36,5 +36,7 @@
         </a>
     @endif
     
-    {{ $slot }}
+    @if(isset($slot) && !empty($slot))
+        {{ $slot }}
+    @endif
 </div>
