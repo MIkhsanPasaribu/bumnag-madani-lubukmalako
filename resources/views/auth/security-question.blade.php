@@ -99,7 +99,7 @@
                     </div>
                     
                     {{-- Security Answer --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('security_answer', '')) }} }">
                         <label for="security_answer" class="block text-sm font-medium text-gray-700 mb-2">
                             Jawaban Anda
                         </label>
@@ -109,10 +109,17 @@
                                class="form-input" 
                                placeholder="Ketik jawaban Anda..."
                                value="{{ old('security_answer') }}"
+                               maxlength="200"
+                               x-on:input="count = $el.value.length"
                                required 
                                autofocus
                                autocomplete="off">
-                        <p class="mt-1.5 text-xs text-gray-500">* Jawaban tidak case-sensitive</p>
+                        <div class="flex justify-between items-center mt-1.5">
+                            <p class="text-xs text-gray-500">* Jawaban tidak case-sensitive</p>
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                               :class="count >= 180 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                               x-text="count + '/200'">0/200</p>
+                        </div>
                     </div>
                     
                     {{-- Submit Button --}}
