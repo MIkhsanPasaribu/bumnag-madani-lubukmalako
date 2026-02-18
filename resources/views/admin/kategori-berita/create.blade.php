@@ -25,7 +25,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- Nama Kategori --}}
-                <div class="space-y-2">
+                <div class="space-y-2" x-data="{ count: {{ mb_strlen(old('nama', '')) }} }">
                     <label for="nama" class="block text-sm font-medium text-gray-700">
                         Nama Kategori <span class="text-secondary">*</span>
                     </label>
@@ -33,12 +33,19 @@
                            name="nama" 
                            id="nama" 
                            value="{{ old('nama') }}"
+                           maxlength="200"
+                           x-on:input="count = $el.value.length"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary @error('nama') border-red-500 @enderror"
                            placeholder="Contoh: Ekonomi"
                            required>
-                    @error('nama')
-                        <p class="text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <div class="flex justify-between items-center">
+                        @error('nama')
+                            <p class="text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                           :class="count >= 180 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                           x-text="count + '/200'">0/200</p>
+                    </div>
                 </div>
 
                 {{-- Warna --}}
@@ -66,23 +73,30 @@
             </div>
 
             {{-- Deskripsi --}}
-            <div class="space-y-2">
+            <div class="space-y-2" x-data="{ count: {{ mb_strlen(old('deskripsi', '')) }} }">
                 <label for="deskripsi" class="block text-sm font-medium text-gray-700">
                     Deskripsi
                 </label>
                 <textarea name="deskripsi" 
                           id="deskripsi" 
                           rows="3"
+                          maxlength="1000"
+                          x-on:input="count = $el.value.length"
                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary @error('deskripsi') border-red-500 @enderror"
                           placeholder="Deskripsi singkat tentang kategori ini...">{{ old('deskripsi') }}</textarea>
-                @error('deskripsi')
-                    <p class="text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                <div class="flex justify-between items-center">
+                    @error('deskripsi')
+                        <p class="text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                       :class="count >= 900 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                       x-text="count + '/1000'">0/1000</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- Icon --}}
-                <div class="space-y-2">
+                <div class="space-y-2" x-data="{ count: {{ mb_strlen(old('icon', '')) }} }">
                     <label for="icon" class="block text-sm font-medium text-gray-700">
                         Icon (opsional)
                     </label>
@@ -90,9 +104,16 @@
                            name="icon" 
                            id="icon" 
                            value="{{ old('icon') }}"
+                           maxlength="100"
+                           x-on:input="count = $el.value.length"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                            placeholder="Contoh: newspaper, chart-bar">
-                    <p class="text-xs text-gray-500">Nama icon Heroicons (tanpa prefix)</p>
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-gray-500">Nama icon Heroicons (tanpa prefix)</p>
+                        <p class="text-xs ml-auto flex-shrink-0 transition-colors"
+                           :class="count >= 90 ? 'text-amber-500 font-medium' : 'text-gray-400'"
+                           x-text="count + '/100'">0/100</p>
+                    </div>
                     @error('icon')
                         <p class="text-sm text-red-600">{{ $message }}</p>
                     @enderror
