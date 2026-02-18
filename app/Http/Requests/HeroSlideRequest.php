@@ -20,10 +20,10 @@ class HeroSlideRequest extends FormRequest
 
         $rules = [
             'judul' => 'required|string|max:255',
-            'subjudul' => 'nullable|string|max:500',
+            'subjudul' => 'nullable|string|max:1000',
             'tipe_media' => 'required|in:gambar,video',
             'url_tombol' => 'nullable|string|max:255',
-            'teks_tombol' => 'nullable|string|max:100',
+            'teks_tombol' => 'nullable|string|max:200',
             'tampilkan_logo' => 'boolean',
             'urutan' => 'nullable|integer|min:0',
             'status' => 'required|in:aktif,tidak_aktif',
