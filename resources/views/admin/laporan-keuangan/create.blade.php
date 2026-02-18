@@ -146,16 +146,21 @@
                     </div>
 
                     {{-- Keterangan --}}
-                    <div>
+                    <div x-data="{ count: {{ mb_strlen(old('keterangan', '')) }} }">
                         <label for="keterangan" class="form-label">
                             Keterangan (Opsional)
                         </label>
                         <textarea name="keterangan" id="keterangan" rows="3"
                                   class="form-input w-full @error('keterangan') border-red-500 @enderror"
-                                  placeholder="Catatan tambahan untuk laporan ini...">{{ old('keterangan') }}</textarea>
-                        @error('keterangan')
-                            <p class="form-error">{{ $message }}</p>
-                        @enderror
+                                  placeholder="Catatan tambahan untuk laporan ini..."
+                                  maxlength="2000"
+                                  x-on:input="count = $el.value.length">{{ old('keterangan') }}</textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            @error('keterangan')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 1800 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/2000'">0/2000</p>
+                        </div>
                     </div>
 
                     {{-- Buttons --}}
