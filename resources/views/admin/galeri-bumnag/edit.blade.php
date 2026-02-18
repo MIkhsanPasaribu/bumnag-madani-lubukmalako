@@ -80,7 +80,7 @@
             </div>
 
             {{-- Judul --}}
-            <div class="mb-6">
+            <div class="mb-6" x-data="{ count: {{ mb_strlen(old('judul', $galeri->judul ?? '')) }} }">
                 <label for="judul" class="block text-sm font-semibold text-gray-700 mb-2">
                     Judul <span class="text-red-500">*</span>
                 </label>
@@ -91,15 +91,20 @@
                     value="{{ old('judul', $galeri->judul) }}"
                     placeholder="Misal: Tim BUMNag Madani 2026"
                     class="form-input @error('judul') border-red-500 @enderror"
+                    maxlength="255"
+                    x-on:input="count = $el.value.length"
                     required
                 >
-                @error('judul')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
+                <div class="flex justify-between items-center mt-1">
+                    @error('judul')
+                        <p class="text-red-600 text-sm">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 230 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/255'">0/255</p>
+                </div>
             </div>
 
             {{-- Deskripsi --}}
-            <div class="mb-6">
+            <div class="mb-6" x-data="{ count: {{ mb_strlen(old('deskripsi', $galeri->deskripsi ?? '')) }} }">
                 <label for="deskripsi" class="block text-sm font-semibold text-gray-700 mb-2">
                     Deskripsi (Opsional)
                 </label>
@@ -109,10 +114,15 @@
                     rows="4"
                     placeholder="Tambahkan deskripsi detail tentang foto ini..."
                     class="form-input @error('deskripsi') border-red-500 @enderror"
+                    maxlength="2000"
+                    x-on:input="count = $el.value.length"
                 >{{ old('deskripsi', $galeri->deskripsi) }}</textarea>
-                @error('deskripsi')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
+                <div class="flex justify-between items-center mt-1">
+                    @error('deskripsi')
+                        <p class="text-red-600 text-sm">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs ml-auto flex-shrink-0 transition-colors" :class="count >= 1800 ? 'text-amber-500 font-medium' : 'text-gray-400'" x-text="count + '/2000'">0/2000</p>
+                </div>
             </div>
 
             {{-- Status --}}
