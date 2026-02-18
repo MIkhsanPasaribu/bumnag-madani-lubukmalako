@@ -62,7 +62,9 @@
             
             {{-- Body --}}
             <div class="px-6 py-4">
-                {{ $slot }}
+                @if(isset($slot) && !empty($slot))
+                    {{ $slot }}
+                @endif
             </div>
             
             {{-- Footer (optional) --}}
