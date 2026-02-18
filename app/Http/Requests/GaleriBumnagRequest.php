@@ -23,7 +23,7 @@ class GaleriBumnagRequest extends FormRequest
     {
         $rules = [
             'judul' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'deskripsi' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', 'in:aktif,tidak_aktif'],
         ];
 
