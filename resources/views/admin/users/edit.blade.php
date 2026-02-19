@@ -101,10 +101,13 @@
                         <select id="unit_id" name="unit_id" x-model="unitId" @change="loadSubUnits()"
                                 class="form-input w-full @error('unit_id') border-red-500 @enderror" required>
                             <option value="">Pilih Unit Usaha</option>
-                            @foreach($units as $unit)
-                                <option value="{{ $unit->id }}" {{ old('unit_id', $user->unit_id) == $unit->id ? 'selected' : '' }}>{{ $unit->nama }}</option>
-                            @endforeach
+                            <template x-for="unit in availableUnits" :key="unit.id">
+                                <option :value="unit.id" x-text="unit.nama"></option>
+                            </template>
                         </select>
+                        <p class="mt-1 text-xs text-gray-400" x-show="role === 'sub_unit' && availableUnits.length > 0">
+                            Hanya unit yang memiliki sub unit yang ditampilkan.
+                        </p>
                         @error('unit_id')
                             <p class="form-error">{{ $message }}</p>
                         @enderror
@@ -146,13 +149,41 @@
 @push('scripts')
 <script>
 function userForm() {
+    const allUnits = @json($units->map(fn ($u) => ['id' => $u->id, 'nama' => $u->nama]));
+    const unitsWithSubUnits = @json($unitsWithSubUnits->map(fn ($u) => ['id' => $u->id, 'nama' => $u->nama]));
+
     return {
         role: '{{ old("role", $user->role) }}',
         unitId: '{{ old("unit_id", $user->unit_id) }}',
         subUnitId: '{{ old("sub_unit_id", $user->sub_unit_id) }}',
         subUnits: [],
+        allUnits,
+        unitsWithSubUnits,
+
+        get availableUnits() {
+            return this.role === 'sub_unit' ? this.unitsWithSubUnits : this.allUnits;
+        },
 
         init() {
+            // Saat role berubah, filter unit & reset sub unit jika perlu
+            this.$watch('role', (newRole) => {
+                if (newRole === 'sub_unit') {
+                    // Jika unit yang dipilih tidak punya sub unit, reset
+                    const unitValid = this.unitsWithSubUnits.find(u => String(u.id) === String(this.unitId));
+                    if (!unitValid) {
+                        this.unitId = '';
+                        this.subUnits = [];
+                        this.subUnitId = '';
+                    } else {
+                        this.loadSubUnits();
+                    }
+                } else {
+                    // Kembali ke role unit, hapus sub unit
+                    this.subUnitId = '';
+                    this.subUnits = [];
+                }
+            });
+
             if (this.unitId) this.loadSubUnits();
         },
 
@@ -161,9 +192,10 @@ function userForm() {
             if (!this.unitId) return;
             try {
                 const res = await fetch(`/admin/users/sub-units/${this.unitId}`);
-                this.subUnits = await res.json();
+                const data = await res.json();
+                this.subUnits = data;
                 const oldSub = '{{ old("sub_unit_id", $user->sub_unit_id) }}';
-                if (oldSub && this.subUnits.find(s => s.id == oldSub)) {
+                if (oldSub && this.subUnits.find(s => String(s.id) === String(oldSub))) {
                     this.subUnitId = oldSub;
                 }
             } catch (e) {
