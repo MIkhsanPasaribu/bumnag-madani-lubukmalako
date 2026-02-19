@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UnitUsaha;
-use App\Models\SubUnitUsaha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -53,10 +52,15 @@ class UserController extends Controller
      */
     public function create()
     {
-        $units = UnitUsaha::where('is_active', true)->orderBy('nama')->get();
-        $subUnits = SubUnitUsaha::where('is_active', true)->with('unit')->orderBy('nama')->get();
+        $units = UnitUsaha::where('is_active', true)->orderBy('urutan')->orderBy('nama')->get();
 
-        return view('admin.users.create', compact('units', 'subUnits'));
+        // Hanya unit yang memiliki sub unit aktif (untuk filter dropdown saat role sub_unit)
+        $unitsWithSubUnits = UnitUsaha::where('is_active', true)
+            ->whereHas('subUnits', fn ($q) => $q->where('is_active', true))
+            ->orderBy('urutan')->orderBy('nama')
+            ->get();
+
+        return view('admin.users.create', compact('units', 'unitsWithSubUnits'));
     }
 
     /**
@@ -123,10 +127,15 @@ class UserController extends Controller
             abort(403, 'Tidak dapat mengedit akun ini.');
         }
 
-        $units = UnitUsaha::where('is_active', true)->orderBy('nama')->get();
-        $subUnits = SubUnitUsaha::where('is_active', true)->with('unit')->orderBy('nama')->get();
+        $units = UnitUsaha::where('is_active', true)->orderBy('urutan')->orderBy('nama')->get();
 
-        return view('admin.users.edit', compact('user', 'units', 'subUnits'));
+        // Hanya unit yang memiliki sub unit aktif
+        $unitsWithSubUnits = UnitUsaha::where('is_active', true)
+            ->whereHas('subUnits', fn ($q) => $q->where('is_active', true))
+            ->orderBy('urutan')->orderBy('nama')
+            ->get();
+
+        return view('admin.users.edit', compact('user', 'units', 'unitsWithSubUnits'));
     }
 
     /**
@@ -232,7 +241,7 @@ class UserController extends Controller
     public function getSubUnits(UnitUsaha $unit)
     {
         return response()->json(
-            $unit->subUnitUsaha()->where('is_active', true)->orderBy('nama')->get(['id', 'nama', 'kode'])
+            $unit->subUnits()->where('is_active', true)->orderBy('nama')->get(['id', 'nama', 'kode'])
         );
     }
 }
